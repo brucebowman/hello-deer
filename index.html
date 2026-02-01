@@ -39,9 +39,11 @@
         .spec-btn { flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 8px; background: white; font-weight: bold; font-size: 0.7rem; }
         .spec-btn.active { border-color: #2d5a27; background: #e8f5e9; }
 
-        #report-form, #id-guide, #video-menu { display: none; }
+        #report-form, #id-guide, #video-menu, #privacy-policy { display: none; }
         .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
         .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: red; font-size: 24px; }
+        
+        .policy-text { font-size: 0.75rem; color: #444; line-height: 1.4; background: #f9f9f9; padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -62,17 +64,27 @@
     </div>
 
     <div id="video-menu">
-        <h4>Safety Resources</h4>
-        <p style="font-size: 0.8rem;">Stay 50m away from all deer.</p>
+        <h4>Safety & Privacy</h4>
         <button class="btn-sub" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">▶️ Safety Film</button>
-        <button class="btn-sub" onclick="hideAll()">Close</button>
+        <button class="btn-sub" onclick="toggleMenu('privacy-policy')">🔒 Privacy Policy</button>
+        <button class="btn-sub" onclick="hideAll()" style="background:#666">Back</button>
+    </div>
+
+    <div id="privacy-policy">
+        <h4>Privacy & Conservation</h4>
+        <div class="policy-text">
+            <p><b>1. Location Data:</b> We use your GPS to help Rangers find injured wildlife. Your exact location is <u>never</u> shown to other users.</p>
+            <p><b>2. Fuzzy Maps:</b> Public sightings are obscured by a 50-100m "blur" to prevent deer harassment.</p>
+            <p><b>3. Anonymous:</b> No personal identity or contact info is stored. Reports are tied to anonymous sessions.</p>
+        </div>
+        <button class="btn-sub" onclick="toggleMenu('video-menu')">Back</button>
     </div>
 
     <div id="id-guide">
         <h4>Deer ID</h4>
         <p><b>Red:</b> Large, branched antlers.</p>
         <p><b>Fallow:</b> Palmate antlers, white spots.</p>
-        <button class="btn-sub" onclick="hideAll()">Close</button>
+        <button class="btn-sub" onclick="hideAll()" style="background:#666">Close</button>
     </div>
 
     <div id="report-form">
@@ -139,7 +151,7 @@
 
     function toggleMenu(id) { hideAll(); document.getElementById(id).style.display = 'block'; }
     function hideAll() { 
-        ['main-ui', 'video-menu', 'id-guide', 'report-form'].forEach(id => document.getElementById(id).style.display = 'none');
+        ['main-ui', 'video-menu', 'id-guide', 'report-form', 'privacy-policy'].forEach(id => document.getElementById(id).style.display = 'none');
         document.getElementById('main-ui').style.display = 'block';
         document.getElementById('crosshair').style.display = 'none';
     }
