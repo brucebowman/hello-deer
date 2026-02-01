@@ -1,39 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Deer by DAPP</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f4; }
+        #map { height: 100vh; width: 100vw; }
+        .ui-panel {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; background: white; padding: 15px; border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 90%; max-width: 400px;
+        }
+        .logo { font-weight: bold; color: #2d5a27; font-size: 1.2rem; margin-bottom: 5px; }
+        
+        /* New Countdown Styles */
+        .gate-timer { 
+            background: #2d5a27; color: white; padding: 10px; border-radius: 12px; 
+            text-align: center; margin-bottom: 10px; font-weight: bold;
+        }
+        .gate-timer.warning { background: #e67e22; }
+        .gate-timer.danger { background: #c0392b; animation: pulse 2s infinite; }
+        
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        .btn-report { background: #2d5a27; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-emergency { background: none; color: #c0392b; border: 1px solid #c0392b; padding: 8px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 0.8rem; }
+        #report-form { display: none; }
+        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="ui-panel">
+    <div class="logo">🦌 Hello Deer <small style="font-weight: normal; color: #666;">by DAPP</small></div>
+
+    <div id="timer-display" class="gate-timer">
+        Calculating gate closure...
+    </div>
+
+    <div id="main-ui">
+        <button class="btn-report" onclick="showReporting()">+ Report Sighting</button>
+        <button class="btn-emergency" onclick="callPolice()">🚨 Emergency: Deer/Safety Issue</button>
+    </div>
+
+    <div id="report-form">
+        <h4 style="margin:0 0 10px 0;">Fuzzy Report (Shared with Public)</h4>
+        <div class="counter-row"><span>Stags (Male)</span><button onclick="change('m', 1)">+ <span id="m-count">0</span></button></div>
+        <div class="counter-row"><span>Hinds (Female)</span><button onclick="change('f', 1)">+ <span id="f-count">0</span></button></div>
+        <div class="counter-row"><span>Calves (Babies)</span><button onclick="change('b', 1)">+ <span id="b-count">0</span></button></div>
+        <button class="btn-report" onclick="submitSighting()" style="background: #e67e22; margin-top:10px;">Submit to Heatmap</button>
+        <button onclick="hideReporting()" style="width:100%; background:none; border:none; color:#666; margin-top:8px; cursor:pointer;">Cancel</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
+
 <script>
+    // Initialize Map
     const map = L.map('map').setView([51.442, -0.285], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // FUZZY HEATMAP: Increased radius and blur to obscure exact locations
-    // Data format: [Lat, Lng, Intensity]
-    const heat = L.heatLayer([
-        [51.446, -0.288, 0.5], [51.435, -0.282, 0.5], [51.442, -0.275, 0.4]
-    ], {
-        radius: 40,  // Makes the "glow" larger
-        blur: 25,    // Softens the edges so you can't see the center point
-        maxZoom: 15  // Disappears if you zoom in too close (prevents sniping)
-    }).addTo(map);
+    // Countdown Logic for February 2026 Cull
+    function updateTimer() {
+        const now = new Date();
+        const lockTime = new Date();
+        lockTime.setHours(20, 0, 0); // Gates lock at 8:00 PM during cull
 
-    let counts = { m: 0, f: 0, b: 0 };
-    
-    function submitSighting() {
-        // In a real app, we'd call the what3words API here.
-        // For the prototype, we simulate the 'Ranger-only' precise data:
-        const total = counts.m + counts.f + counts.b;
+        const timerEl = document.getElementById('timer-display');
         
-        // This simulates what the database (and the Rangers) would see
-        console.log("RANGER LOG: Sighting at ///filled.count.soap - Count: " + total);
+        if (now > lockTime) {
+            timerEl.innerHTML = "🚫 PARK CLOSED (Cull in progress)";
+            timerEl.className = "gate-timer danger";
+            return;
+        }
 
-        alert(`Success! Your sighting is now part of the general heatmap.\n\nThank you for keeping Richmond Park safe!`);
+        const diff = lockTime - now;
+        const mins = Math.floor(diff / 1000 / 60);
         
-        hideReporting();
-        counts = { m: 0, f: 0, b: 0 };
-        document.querySelectorAll('[id$="-count"]').forEach(el => el.innerText = 0);
+        if (mins <= 30) {
+            timerEl.className = "gate-timer danger";
+            timerEl.innerHTML = `⚠️ EXIT NOW: ${mins}m until lockup`;
+        } else if (mins <= 60) {
+            timerEl.className = "gate-timer warning";
+            timerEl.innerHTML = `Gates lock in ${mins} mins`;
+        } else {
+            timerEl.innerHTML = `Gates lock at 20:00 (${Math.floor(mins/60)}h ${mins%60}m left)`;
+        }
     }
 
-    // February 2026 Fact Rotation
-    const facts = [
-        "Feb 2026: Male deer are currently shedding antlers. If you see one with missing antlers, it's natural!",
-        "Safety Tip: 50 meters is roughly the length of 4 double-decker buses.",
-        "Cull Notice: Pedestrian gates lock at 20:00 tonight. Don't get locked in!"
-    ];
-    document.getElementById('fact-of-the-day').innerHTML = `<b>Pro Tip:</b> ${facts[Math.floor(Math.random() * facts.length)]}`;
+    setInterval(updateTimer, 60000);
+    updateTimer();
+
+    // Sighting Logic
+    let counts = { m: 0, f: 0, b: 0 };
+    function showReporting() { document.getElementById('main-ui').style.display = 'none'; document.getElementById('report-form').style.display = 'block'; }
+    function hideReporting() { document.getElementById('main-ui').style.display = 'block'; document.getElementById('report-form').style.display = 'none'; }
+    function change(type, delta) { counts[type] += delta; document.getElementById(type + '-count').innerText = counts[type]; }
+
+    function submitSighting() {
+        // Log precise w3w for Rangers (simulated)
+        console.log("SENT TO RANGERS: 3-deer sighting at ///vivid.ounce.fears");
+        alert("Fuzzy report added! We've noted the precise location for the Park Rangers.");
+        hideReporting();
+        counts = { m: 0, f: 0, b: 0 };
+    }
+
+    function callPolice() {
+        if(confirm("Dial Richmond Park Police? (07920 586546)")) {
+            window.location.href = "tel:07920586546";
+        }
+    }
 </script>
+</body>
+</html>
