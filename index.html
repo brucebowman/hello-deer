@@ -13,6 +13,7 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; overflow: hidden; background: #222; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #map { height: 100%; width: 100%; z-index: 1; }
         
+        /* UI Elements */
         .leaflet-top.leaflet-right { top: 10px !important; right: 10px !important; }
         .hamburger { position: absolute; top: 15px; left: 15px; z-index: 9999; background: white; border-radius: 8px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .hamburger div { width: 24px; height: 3px; background: #2d5a27; border-radius: 2px; }
@@ -20,23 +21,32 @@
         /* Filter Widget */
         .filter-widget { position: absolute; bottom: 120px; right: 15px; z-index: 9001; }
         .filter-btn { background: white; width: 50px; height: 50px; border-radius: 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; font-size: 1.2rem; }
-        .filter-options { position: absolute; bottom: 60px; right: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: none; width: 180px; }
+        .filter-options { position: absolute; bottom: 60px; right: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: none; width: 200px; max-height: 60vh; overflow-y: auto; }
         .filter-options.show { display: block; }
-        .filter-opt { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .filter-opt { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .filter-link { color: #2d5a27; font-size: 0.75rem; text-decoration: underline; margin-top: 10px; display: block; font-weight: bold; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }
         
-        /* Sidebar and Overlays */
+        /* Overlays */
         .side-menu { position: fixed; top: 0; left: -310px; width: 280px; height: 100%; background: #f8f9fa; z-index: 10000; transition: transform 0.3s ease; box-shadow: 5px 0 25px rgba(0,0,0,0.4); padding: 25px; visibility: hidden; }
         .side-menu.open { transform: translateX(310px); visibility: visible; }
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; backdrop-filter: blur(2px); }
         .menu-overlay.active { display: block; }
         .menu-item { padding: 18px 0; border-bottom: 1px solid #eee; font-weight: 600; color: #333; cursor: pointer; }
 
-        .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 22px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 88%; max-width: 400px; text-align: center; }
-        .btn-report { background: #2d5a27; color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; }
+        .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 22px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 88%; max-width: 400px; text-align: center; box-sizing: border-box; }
+        .btn-report { background: #2d5a27; color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .pin-selector { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 5000; pointer-events: none; display: none; width: 25px; height: 41px; }
+
+        /* Gallery Modal */
+        .gallery-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 11000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .gallery-content { width: 90%; max-width: 400px; text-align: center; }
+        .gallery-img { width: 100%; border-radius: 12px; margin-bottom: 15px; aspect-ratio: 4/3; object-fit: cover; border: 2px solid #444; }
+        .gallery-nav { display: flex; justify-content: space-between; width: 100%; margin-top: 20px; }
+        .nav-btn { background: white; color: black; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
 
         .step { display: none; }
         .step.active { display: block; }
+        .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -49,18 +59,34 @@
         <div style="font-size: 0.7rem; color: #999; margin-bottom: 10px; letter-spacing: 1px;">MAP FILTERS</div>
         <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-m"> <span style="color:#e63946">●</span> Red Stags</label>
         <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-f"> <span style="color:#f4a261">●</span> Red Hinds</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-y"> <span style="color:#ffd166">●</span> Red Calves</label>
         <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-m"> <span style="color:#0077b6">●</span> Fallow Bucks</label>
         <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-f"> <span style="color:#00b4d8">●</span> Fallow Does</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-y"> <span style="color:#90e0ef">●</span> Fallow Fawns</label>
+        <div class="filter-link" onclick="openGallery()">🖼️ View Species Gallery</div>
     </div>
     <div class="filter-btn" onclick="toggleFilters()">🔍</div>
 </div>
 
 <div id="side-menu" class="side-menu">
     <h2 style="color:#2d5a27; margin-top:0;">Menu</h2>
-    <div class="menu-item" onclick="alert('Gallery Feature Pending')">🖼️ Species Gallery</div>
+    <div class="menu-item" onclick="openGallery()">🖼️ Species Gallery</div>
     <div class="menu-item" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
-    <div class="menu-item" onclick="alert('Time Sync Active')">🌐 Global Time Sync: ON</div>
+    <div class="menu-item" onclick="alert('System: Europe/London Sync')">🌐 Time Sync: ON</div>
     <div class="menu-item" onclick="toggleMenu()" style="margin-top:30px; color:#999; font-size:0.9rem;">✕ Close</div>
+</div>
+
+<div id="gallery" class="gallery-overlay">
+    <div class="gallery-content">
+        <h2 id="gal-title"></h2>
+        <img id="gal-img" class="gallery-img" src="">
+        <p id="gal-desc" style="min-height: 4em;"></p>
+        <div class="gallery-nav">
+            <button class="nav-btn" onclick="prevGal()">Prev</button>
+            <button class="nav-btn" onclick="closeGallery()" style="background:#444; color:white;">Close</button>
+            <button class="nav-btn" onclick="nextGal()">Next</button>
+        </div>
+    </div>
 </div>
 
 <div id="map"></div>
@@ -69,26 +95,22 @@
 <div class="ui-panel">
     <div id="main-ui">
         <div style="font-weight:800; color:#2d5a27; font-size:1.4rem;">Hello Deer</div>
-        <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px;">Detecting Park...</div>
+        <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px;">Detecting...</div>
         <div id="timer-display" style="background:#fff4e6; color:#d9480f; padding:8px; border-radius:10px; font-weight:bold; font-size:0.85rem; margin-bottom:18px;">GATES CLOSING IN: --:--</div>
         <button class="btn-report" onclick="startWizard()">+ Report Sighting</button>
-        <div style="display:flex; gap:8px; margin-top:10px;">
-            <button style="flex:1; padding:10px; border-radius:10px; border:1px solid #ddd; background:#f8f9fa; font-size:0.75rem;" onclick="map.flyTo([51.442, -0.285], 15)">📍 Richmond</button>
-            <button style="flex:1; padding:10px; border-radius:10px; border:1px solid #ddd; background:#f8f9fa; font-size:0.75rem;" onclick="map.flyTo([51.413, -0.339], 15)">📍 Bushy</button>
-        </div>
     </div>
 
     <div id="step-1" class="step">
-        <h3 style="margin:0 0 15px 0;">Species?</h3>
-        <button class="btn-report" style="margin-bottom:12px; background:#c0392b;" onclick="nextStep(2, 'Red')">🔴 Red Deer</button>
+        <h3 style="margin:0 0 10px 0;">Which Species?</h3>
+        <button class="btn-report" style="margin-bottom:10px; background:#c0392b;" onclick="nextStep(2, 'Red')">🔴 Red Deer</button>
         <button class="btn-report" style="background:#2980b9;" onclick="nextStep(2, 'Fallow')">⚪ Fallow Deer</button>
         <button style="margin-top:15px; background:none; border:none; color:#666; text-decoration:underline;" onclick="hideAll()">Cancel</button>
     </div>
 
     <div id="step-2" class="step">
-        <h3 style="margin:0 0 15px 0;">Count</h3>
+        <h3 style="margin:0 0 15px 0;">Sighting Details</h3>
         <div id="counters"></div>
-        <button class="btn-report" style="background:#e67e22; margin-top:15px;" onclick="submitSighting()">Confirm Report</button>
+        <button class="btn-report" style="background:#e67e22; margin-top:10px;" onclick="submitSighting()">Confirm Report</button>
     </div>
 </div>
 
@@ -97,66 +119,78 @@
     L.control.zoom({ position: 'topright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // Heat Layers with HIGH INTENSITY and clustered gradients
-    let redHeat = L.heatLayer([], {radius: 35, blur: 20, minOpacity: 0.5, gradient: {0.4: '#ffd700', 0.7: '#ff8c00', 1.0: '#ff0000'}}).addTo(map);
-    let fallowHeat = L.heatLayer([], {radius: 35, blur: 20, minOpacity: 0.5, gradient: {0.4: '#ffffff', 0.7: '#00ffff', 1.0: '#0000ff'}}).addTo(map);
+    let redHeat = L.heatLayer([], {radius: 35, blur: 20, minOpacity: 0.5, gradient: {0.4: '#ffd166', 0.7: '#f4a261', 1.0: '#e63946'}}).addTo(map);
+    let fallowHeat = L.heatLayer([], {radius: 35, blur: 20, minOpacity: 0.5, gradient: {0.4: '#90e0ef', 0.7: '#00b4d8', 1.0: '#0077b6'}}).addTo(map);
+
+    const galleryData = [
+        { t: "Red Stag", d: "Large branched antlers, heavy mane, massive body.", img: "http://googleusercontent.com/image_collection/image_retrieval/12248396905017845915_0" },
+        { t: "Red Hind", d: "Large female Red deer. No antlers, reddish coat.", img: "http://googleusercontent.com/image_collection/image_retrieval/5495582432879931204_0" },
+        { t: "Red Calf", d: "Young Red deer. Small, reddish-brown, stays near Hinds.", img: "http://googleusercontent.com/image_collection/image_retrieval/12511546540345442691_0" },
+        { t: "Fallow Buck", d: "Broad, palm-like antlers. Often spotted.", img: "http://googleusercontent.com/image_collection/image_retrieval/5363411739966259202_0" },
+        { t: "Fallow Doe", d: "Female Fallow. Heart-shaped white rump with tail.", img: "http://googleusercontent.com/image_collection/image_retrieval/16689377828969445462_0" },
+        { t: "Fallow Fawn", d: "Young Fallow. Small with distinct white spots.", img: "http://googleusercontent.com/image_collection/image_retrieval/2706677486109467396_0" }
+    ];
+    let galIdx = 0;
 
     const dummySightings = [];
-    function generateClusteredData(lat, lng, species, count) {
+    function seed(lat, lng, species, count) {
+        const sexes = ['m', 'f', 'y'];
         for(let i=0; i<count; i++) {
             dummySightings.push({
-                lat: lat + (Math.random()-0.5)*0.015, // Tighter clusters
+                lat: lat + (Math.random()-0.5)*0.015,
                 lng: lng + (Math.random()-0.5)*0.015,
                 species: species,
-                sex: Math.random() > 0.5 ? 'm' : 'f'
+                sex: sexes[Math.floor(Math.random()*3)]
             });
         }
     }
-    // Seed clusters in Richmond and Bushy
-    generateClusteredData(51.442, -0.285, 'Red', 40);
-    generateClusteredData(51.448, -0.295, 'Fallow', 30);
-    generateClusteredData(51.413, -0.339, 'Red', 30);
-    generateClusteredData(51.418, -0.345, 'Fallow', 40);
+    seed(51.442, -0.285, 'Red', 45); seed(51.448, -0.295, 'Fallow', 35);
+    seed(51.413, -0.339, 'Red', 35); seed(51.418, -0.345, 'Fallow', 45);
 
     function refreshHeat() {
-        const rM = document.getElementById('f-red-m').checked, rF = document.getElementById('f-red-f').checked;
-        const fM = document.getElementById('f-fal-m').checked, fF = document.getElementById('f-fal-f').checked;
+        const rM = document.getElementById('f-red-m').checked, rF = document.getElementById('f-red-f').checked, rY = document.getElementById('f-red-y').checked;
+        const fM = document.getElementById('f-fal-m').checked, fF = document.getElementById('f-fal-f').checked, fY = document.getElementById('f-fal-y').checked;
 
-        const rPoints = dummySightings.filter(s => s.species==='Red' && ((s.sex==='m'&&rM)||(s.sex==='f'&&rF))).map(s => [s.lat, s.lng, 1.0]);
-        const fPoints = dummySightings.filter(s => s.species==='Fallow' && ((s.sex==='m'&&fM)||(s.sex==='f'&&fF))).map(s => [s.lat, s.lng, 1.0]);
-        
-        redHeat.setLatLngs(rPoints);
-        fallowHeat.setLatLngs(fPoints);
-    }
-
-    function updateUI() {
-        const isBushy = map.getCenter().lng < -0.31;
-        document.getElementById('park-name').innerText = isBushy ? "📍 Bushy Park" : "📍 Richmond Park";
-        document.getElementById('timer-display').innerText = isBushy ? "GATES CLOSING IN: 12h 05m" : "GATES CLOSING IN: 9h 35m";
+        const rPoints = dummySightings.filter(s => s.species==='Red' && ((s.sex==='m'&&rM)||(s.sex==='f'&&rF)||(s.sex==='y'&&rY))).map(s => [s.lat, s.lng, 1.0]);
+        const fPoints = dummySightings.filter(s => s.species==='Fallow' && ((s.sex==='m'&&fM)||(s.sex==='f'&&fF)||(s.sex==='y'&&fY))).map(s => [s.lat, s.lng, 1.0]);
+        redHeat.setLatLngs(rPoints); fallowHeat.setLatLngs(fPoints);
     }
 
     function toggleFilters() { document.getElementById('filter-box').classList.toggle('show'); }
     function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
+    function openGallery() { document.getElementById('gallery').style.display='flex'; updateGal(); }
+    function closeGallery() { document.getElementById('gallery').style.display='none'; }
+    function nextGal() { galIdx = (galIdx + 1) % galleryData.length; updateGal(); }
+    function prevGal() { galIdx = (galIdx - 1 + galleryData.length) % galleryData.length; updateGal(); }
+    function updateGal() {
+        document.getElementById('gal-title').innerText = galleryData[galIdx].t;
+        document.getElementById('gal-img').src = galleryData[galIdx].img;
+        document.getElementById('gal-desc').innerText = galleryData[galIdx].d;
+    }
+
     function startWizard() { document.getElementById('main-ui').style.display='none'; document.getElementById('step-1').classList.add('active'); document.getElementById('pin-selector').style.display='block'; }
     function hideAll() { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('main-ui').style.display='block'; document.getElementById('pin-selector').style.display='none'; }
-
+    
     function nextStep(s, species) {
         if(species) {
-            const labels = species === 'Red' ? ['Stags', 'Hinds'] : ['Bucks', 'Does'];
-            document.getElementById('counters').innerHTML = labels.map(l => `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:15px; border-radius:12px; margin-bottom:10px;">
+            const lbl = species === 'Red' ? ['Stags', 'Hinds', 'Calves'] : ['Bucks', 'Does', 'Fawns'];
+            document.getElementById('counters').innerHTML = lbl.map(l => `
+                <div class="counter-box">
                     <span style="font-weight:bold;">${l}</span>
-                    <div style="display:flex; align-items:center; gap:15px;"><button style="width:40px; height:40px; border-radius:10px; border:none; background:#2d5a27; color:white;">-</button><span>0</span><button style="width:40px; height:40px; border-radius:10px; border:none; background:#2d5a27; color:white;">+</button></div>
+                    <div style="display:flex; align-items:center; gap:12px;"><button style="width:36px; height:36px; border-radius:8px; border:none; background:#2d5a27; color:white; font-size:1.2rem;">-</button><span>0</span><button style="width:36px; height:36px; border-radius:8px; border:none; background:#2d5a27; color:white; font-size:1.2rem;">+</button></div>
                 </div>`).join('');
         }
         document.querySelectorAll('.step').forEach(div => div.classList.remove('active'));
         document.getElementById('step-'+s).classList.add('active');
     }
 
-    function submitSighting() { alert("Reported!"); hideAll(); }
-
-    map.on('move', updateUI);
-    window.onload = () => { refreshHeat(); updateUI(); };
+    function submitSighting() { alert("Report Submitted!"); hideAll(); }
+    map.on('move', () => {
+        const isBushy = map.getCenter().lng < -0.31;
+        document.getElementById('park-name').innerText = isBushy ? "📍 Bushy Park" : "📍 Richmond Park";
+        document.getElementById('timer-display').innerText = `GATES CLOSING IN: 3h 15m`;
+    });
+    window.onload = () => { refreshHeat(); };
 </script>
 </body>
 </html>
