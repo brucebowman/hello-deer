@@ -13,8 +13,35 @@
         :root { --vh: 1vh; }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; background: #222; height: 100vh; height: calc(var(--vh) * 100); }
         #map { height: 100%; width: 100vw; z-index: 1; }
+        
+        /* Layout Adjustments */
         .leaflet-top.leaflet-left { left: auto; right: 10px; top: 10px; }
 
+        /* Hamburger Menu Icon */
+        .hamburger {
+            position: absolute; top: 15px; left: 15px; z-index: 4000;
+            background: white; border-radius: 8px; padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .hamburger div { width: 22px; height: 3px; background: #2d5a27; border-radius: 2px; }
+
+        /* Side Drawer Menu */
+        .side-menu {
+            position: fixed; top: 0; left: -280px; width: 250px; height: 100%;
+            background: #f8f9fa; z-index: 4001; transition: 0.3s ease;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.3); padding: 20px;
+        }
+        .side-menu.open { left: 0; }
+        .menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 3999; display: none;
+        }
+        .menu-overlay.active { display: block; }
+        .menu-item { padding: 15px; border-bottom: 1px solid #ddd; font-weight: bold; color: #333; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .menu-item:hover { background: #eee; }
+
+        /* Bottom UI Panel */
         .ui-panel {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             z-index: 3000; background: white; padding: 20px; border-radius: 24px;
@@ -23,12 +50,7 @@
 
         .logo { font-weight: bold; color: #2d5a27; font-size: 1.2rem; text-align: center; }
         .location-header { font-size: 0.85rem; color: #666; text-align: center; margin-bottom: 8px; font-weight: 500; }
-        
-        .status-bar { 
-            color: #2d5a27; padding: 5px; text-align: center; 
-            margin-bottom: 15px; font-weight: bold; font-size: 0.85rem;
-            line-height: 1.4;
-        }
+        .status-bar { color: #2d5a27; padding: 5px; text-align: center; margin-bottom: 15px; font-weight: bold; font-size: 0.85rem; line-height: 1.4; }
         .status-bar.danger { color: #b91c1c; }
 
         .btn-report { background: #2d5a27; color: white; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
@@ -40,29 +62,31 @@
         .step.active { display: block; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .choice-btn { 
-            display: flex; align-items: center; justify-content: space-between;
-            width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee;
-            border-radius: 12px; background: white; font-weight: bold; cursor: pointer;
-        }
-        
+        .choice-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 12px; background: white; font-weight: bold; cursor: pointer; }
         .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
         .count-val { font-size: 1.3rem; font-weight: bold; color: #2d5a27; }
         .count-btn { background: #2d5a27; color: white; border: none; width: 35px; height: 35px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; }
 
-        .gender-icon { font-size: 1.2rem; margin-right: 5px; }
-        .male { color: #2980b9; }
-        .female { color: #e84393; }
-        .baby { color: #f1c40f; }
-
-        .crosshair { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            z-index: 2000; pointer-events: none; display: none; color: #ff4757; 
-            font-size: 40px; font-weight: 200; 
-        }
+        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: #ff4757; font-size: 40px; font-weight: 200; }
     </style>
 </head>
 <body>
+
+<div id="menu-overlay" class="menu-overlay" onclick="toggleMenu()"></div>
+
+<div class="hamburger" onclick="toggleMenu()">
+    <div></div>
+    <div></div>
+    <div></div>
+</div>
+
+<div id="side-menu" class="side-menu">
+    <h2 style="color:#2d5a27; margin-bottom:30px;">Menu</h2>
+    <div class="menu-item" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
+    <div class="menu-item" onclick="alert('Richmond Park & Bushy Park support active.')">🌳 About the Parks</div>
+    <div class="menu-item" onclick="alert('Privacy: Your data is anonymized.')">🔒 Privacy Policy</div>
+    <div class="menu-item" onclick="toggleMenu()" style="margin-top:20px; color:#666;">⬅️ Close</div>
+</div>
 
 <div id="map"></div>
 <div id="crosshair" class="crosshair">✛</div>
@@ -74,7 +98,6 @@
         <div id="timer-display" class="status-bar">Syncing Gates...</div>
         
         <button class="btn-report" onclick="startWizard()">+ Report a Sighting</button>
-        <button class="btn-sub" onclick="toggleMenu('video-menu')">📖 Discovery & Safety</button>
         
         <div style="display:flex; gap:5px;">
             <button id="sim-richmond" class="btn-sim" style="flex:1" onclick="toggleSimulator('richmond')">📍 Richmond</button>
@@ -91,17 +114,11 @@
 
     <div id="step-2" class="step">
         <h3 style="text-align:center; margin-top:0;" id="step-2-title">How many?</h3>
-        <div class="counter-box"><span><span class="gender-icon male">♂</span> <b id="label-male">Males</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('m', -1)">-</button><span id="m-count" class="count-val">0</span><button class="count-btn" onclick="change('m', 1)">+</button></div></div>
-        <div class="counter-box"><span><span class="gender-icon female">♀</span> <b id="label-female">Females</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('f', -1)">-</button><span id="f-count" class="count-val">0</span><button class="count-btn" onclick="change('f', 1)">+</button></div></div>
-        <div class="counter-box"><span><span class="gender-icon baby">👶</span> <b id="label-baby">Young</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('b', -1)">-</button><span id="b-count" class="count-val">0</span><button class="count-btn" onclick="change('b', 1)">+</button></div></div>
+        <div class="counter-box"><span>♂ <b id="label-male">Males</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('m', -1)">-</button><span id="m-count" class="count-val">0</span><button class="count-btn" onclick="change('m', 1)">+</button></div></div>
+        <div class="counter-box"><span>♀ <b id="label-female">Females</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('f', -1)">-</button><span id="f-count" class="count-val">0</span><button class="count-btn" onclick="change('f', 1)">+</button></div></div>
+        <div class="counter-box"><span>👶 <b id="label-baby">Young</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('b', -1)">-</button><span id="b-count" class="count-val">0</span><button class="count-btn" onclick="change('b', 1)">+</button></div></div>
         <button class="btn-report" style="background:#e67e22; margin-top:10px;" onclick="submitSighting()">Confirm Sighting</button>
         <button class="btn-sub" onclick="nextStep(1)" style="background:#666">Back</button>
-    </div>
-
-    <div id="video-menu" class="step">
-        <h3 style="text-align:center;">Discovery</h3>
-        <button class="btn-sub" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">▶️ Safety Film</button>
-        <button class="btn-sub" onclick="hideAll()">Back</button>
     </div>
 </div>
 
@@ -116,6 +133,11 @@
     
     let reportData = { species: '', m: 0, f: 0, b: 0 };
 
+    function toggleMenu() {
+        document.getElementById('side-menu').classList.toggle('open');
+        document.getElementById('menu-overlay').classList.toggle('active');
+    }
+
     function formatTime(ms) {
         let s = Math.floor(ms / 1000);
         let h = Math.floor(s / 3600); s %= 3600;
@@ -127,44 +149,26 @@
         const now = new Date();
         const lockTime = new Date(); lockTime.setHours(20, 0, 0, 0);
         const openTime = new Date(); openTime.setHours(7, 30, 0, 0);
-        
         const el = document.getElementById('timer-display');
-        let statusText = "";
-        let isClosed = false;
-
-        if (now >= lockTime) {
-            // It's late night, park is closed until tomorrow morning
-            const tomorrowOpen = new Date(); 
-            tomorrowOpen.setDate(now.getDate() + 1);
-            tomorrowOpen.setHours(7, 30, 0, 0);
-            statusText = `GATES: <span style="color:#b91c1c">CLOSED</span><br>Opening in ${formatTime(tomorrowOpen - now)}`;
-            isClosed = true;
-        } else if (now < openTime) {
-            // It's early morning, park is closed until 7:30 today
-            statusText = `GATES: <span style="color:#b91c1c">CLOSED</span><br>Opening in ${formatTime(openTime - now)}`;
-            isClosed = true;
+        let isClosed = (now >= lockTime || now < openTime);
+        
+        if (isClosed) {
+            let nextOpen = new Date(openTime);
+            if (now >= lockTime) nextOpen.setDate(now.getDate() + 1);
+            el.innerHTML = `GATES: <span style="color:#b91c1c">CLOSED</span><br>Opening in ${formatTime(nextOpen - now)}`;
         } else {
-            // Park is open!
-            statusText = `GATES: <span style="color:#2d5a27">OPEN</span><br>Closing in ${formatTime(lockTime - now)}`;
-            isClosed = false;
+            el.innerHTML = `GATES: <span style="color:#2d5a27">OPEN</span><br>Closing in ${formatTime(lockTime - now)}`;
         }
-
-        el.innerHTML = statusText;
         el.className = isClosed ? "status-bar danger" : "status-bar";
     }
-    setInterval(updateGateStatus, 1000);
-    updateGateStatus();
+    setInterval(updateGateStatus, 1000); updateGateStatus();
 
     function updateParkHeader() {
         const center = map.getCenter();
         const header = document.getElementById('park-name');
-        if (center.lat > 51.42 && center.lat < 51.46 && center.lng > -0.31 && center.lng < -0.25) {
-            header.innerHTML = "📍 Richmond Park";
-        } else if (center.lat > 51.40 && center.lat < 51.42 && center.lng > -0.36 && center.lng < -0.31) {
-            header.innerHTML = "📍 Bushy Park";
-        } else {
-            header.innerHTML = "Outside Protected Parks";
-        }
+        if (center.lat > 51.42 && center.lat < 51.46 && center.lng > -0.31 && center.lng < -0.25) header.innerHTML = "📍 Richmond Park";
+        else if (center.lat > 51.40 && center.lat < 51.42 && center.lng > -0.36 && center.lng < -0.31) header.innerHTML = "📍 Bushy Park";
+        else header.innerHTML = "Outside Protected Parks";
     }
     map.on('move', updateParkHeader);
 
@@ -195,10 +199,7 @@
         document.getElementById('alert-sound').play().catch(()=>{});
         alert(`Reported ${reportData.m + reportData.f + reportData.b} ${reportData.species} deer.`);
         hideAll();
-        reportData = { species: '', m: 0, f: 0, b: 0 };
-        ['m', 'f', 'b'].forEach(t => document.getElementById(t + '-count').innerText = 0);
     }
-    function toggleMenu(id) { hideAll(); document.getElementById(id).classList.add('active'); document.getElementById('main-ui').style.display = 'none'; }
     function hideAll() { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('main-ui').style.display = 'block'; document.getElementById('crosshair').style.display = 'none'; }
 </script>
 </body>
