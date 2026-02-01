@@ -13,29 +13,37 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; overflow: hidden; background: #222; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* UI Layering */
-        .leaflet-top.leaflet-right { top: 10px; right: 10px; }
+        /* Zoom Controls: Top Right */
+        .leaflet-top.leaflet-right { top: 10px !important; right: 10px !important; }
+        .leaflet-top.leaflet-left { display: none !important; } /* Hide default left-side zoom */
+
         .hamburger { position: absolute; top: 15px; left: 15px; z-index: 9999; background: white; border-radius: 8px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .hamburger div { width: 24px; height: 3px; background: #2d5a27; border-radius: 2px; }
 
         /* Filter Widget - Bottom Right */
         .filter-widget { position: absolute; bottom: 120px; right: 15px; z-index: 9001; }
         .filter-btn { background: white; width: 50px; height: 50px; border-radius: 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; font-size: 1.2rem; }
-        .filter-options { position: absolute; bottom: 60px; right: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: none; width: 160px; }
+        .filter-options { position: absolute; bottom: 60px; right: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: none; width: 180px; }
         .filter-options.show { display: block; }
-        .filter-opt { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
-        .filter-opt input { accent-color: #2d5a27; }
-
-        /* General UI */
+        .filter-opt { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        
         .side-menu { position: fixed; top: 0; left: -310px; width: 280px; height: 100%; background: #f8f9fa; z-index: 10000; transition: transform 0.3s ease; box-shadow: 5px 0 25px rgba(0,0,0,0.4); padding: 25px; visibility: hidden; }
         .side-menu.open { transform: translateX(310px); visibility: visible; }
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; backdrop-filter: blur(2px); }
         .menu-overlay.active { display: block; }
-        
+        .menu-item { padding: 18px 0; border-bottom: 1px solid #eee; font-weight: 600; color: #333; cursor: pointer; }
+
         .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 22px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 88%; max-width: 400px; text-align: center; }
         .btn-report { background: #2d5a27; color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; }
+        
+        /* Fixed Pin Selector */
         .pin-selector { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 5000; pointer-events: none; display: none; width: 25px; height: 41px; }
         
+        /* Gallery Overlay */
+        .gallery-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 11000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .gallery-content { width: 90%; max-width: 400px; text-align: center; }
+        .gallery-img { width: 100%; border-radius: 12px; margin-bottom: 15px; border: 2px solid #444; }
+
         .step { display: none; }
         .step.active { display: block; }
     </style>
@@ -47,20 +55,30 @@
 
 <div class="filter-widget">
     <div class="filter-options" id="filter-box">
-        <div style="font-size: 0.7rem; color: #999; margin-bottom: 8px;">FILTER SIGHTINGS</div>
-        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-m"> Red Stags</label>
-        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-f"> Red Hinds</label>
-        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-m"> Fallow Bucks</label>
-        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-f"> Fallow Does</label>
+        <div style="font-size: 0.7rem; color: #999; margin-bottom: 10px; letter-spacing: 1px;">MAP FILTERS</div>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-m"> <span style="color:#e63946">●</span> Red Stags</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-f"> <span style="color:#f4a261">●</span> Red Hinds</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-m"> <span style="color:#0077b6">●</span> Fallow Bucks</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-f"> <span style="color:#00b4d8">●</span> Fallow Does</label>
     </div>
     <div class="filter-btn" onclick="toggleFilters()">🔍</div>
 </div>
 
 <div id="side-menu" class="side-menu">
-    <h2 style="color:#2d5a27; margin-top:0;">Hello Deer</h2>
-    <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="toggleMenu()">🗺️ Map View</div>
-    <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="alert('Time Sync Active')">🌐 Time Sync: ON</div>
-    <div style="margin-top:30px; color:#999; cursor:pointer;" onclick="toggleMenu()">✕ Close</div>
+    <h2 style="color:#2d5a27; margin-top:0;">Menu</h2>
+    <div class="menu-item" onclick="openGallery()">🖼️ Species Gallery</div>
+    <div class="menu-item" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
+    <div class="menu-item" onclick="alert('System: Europe/London Sync')">🌐 Global Time Sync: ON</div>
+    <div class="menu-item" onclick="toggleMenu()" style="margin-top:30px; color:#999; font-size:0.9rem;">✕ Close</div>
+</div>
+
+<div id="gallery" class="gallery-overlay">
+    <div class="gallery-content">
+        <h2 id="gal-title"></h2>
+        <img id="gal-img" class="gallery-img" src="">
+        <p id="gal-desc"></p>
+        <button onclick="closeGallery()" style="padding:10px 20px; border-radius:8px; border:none; background:white; font-weight:bold;">Close Gallery</button>
+    </div>
 </div>
 
 <div id="map"></div>
@@ -70,11 +88,11 @@
     <div id="main-ui">
         <div style="font-weight:800; color:#2d5a27; font-size:1.4rem;">Hello Deer</div>
         <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px;">Detecting Park...</div>
-        <div id="timer-display" style="background:#fff4e6; color:#d9480f; padding:8px; border-radius:10px; font-weight:bold; font-size:0.85rem; margin-bottom:18px;">Syncing Gates...</div>
+        <div id="timer-display" style="background:#fff4e6; color:#d9480f; padding:8px; border-radius:10px; font-weight:bold; font-size:0.85rem; margin-bottom:18px;">GATES CLOSING IN: --:--</div>
         <button class="btn-report" onclick="startWizard()">+ Report Sighting</button>
         <div style="display:flex; gap:8px; margin-top:10px;">
-            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.442, -0.285], 14)">📍 Richmond</button>
-            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.413, -0.339], 14)">📍 Bushy</button>
+            <button style="flex:1; padding:10px; border-radius:10px; border:1px solid #ddd; background:#f8f9fa; font-size:0.75rem;" onclick="map.flyTo([51.442, -0.285], 14)">📍 Richmond</button>
+            <button style="flex:1; padding:10px; border-radius:10px; border:1px solid #ddd; background:#f8f9fa; font-size:0.75rem;" onclick="map.flyTo([51.413, -0.339], 14)">📍 Bushy</button>
         </div>
     </div>
 
@@ -93,94 +111,68 @@
 </div>
 
 <script>
-    const map = L.map('map', { zoomControl: true, tap: false }).setView([51.442, -0.285], 14);
+    // Initialize map with zoom controls forced to TopRight
+    const map = L.map('map', { zoomControl: false, tap: false }).setView([51.442, -0.285], 14);
+    L.control.zoom({ position: 'topright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // Dynamic Heat Layer
-    let heatLayer = L.heatLayer([], {radius: 25, blur: 15, max: 1.0}).addTo(map);
+    // Heat Layers with HIGH CONTRAST gradients
+    let redHeat = L.heatLayer([], {radius: 25, blur: 15, gradient: {0.4: 'gold', 0.6: 'orange', 1.0: 'red'}}).addTo(map);
+    let fallowHeat = L.heatLayer([], {radius: 25, blur: 15, gradient: {0.4: 'white', 0.6: 'cyan', 1.0: 'blue'}}).addTo(map);
 
-    // Generate Dummy Data
     const dummySightings = [];
-    const speciesList = ['Red', 'Fallow'];
-    const types = ['m', 'f']; // male, female
-    
-    function generateDummyData(centerLat, centerLng) {
-        for(let i=0; i<60; i++) {
+    function generateData() {
+        for(let i=0; i<100; i++) {
             dummySightings.push({
-                lat: centerLat + (Math.random() - 0.5) * 0.03,
-                lng: centerLng + (Math.random() - 0.5) * 0.04,
-                species: speciesList[Math.floor(Math.random()*2)],
-                sex: types[Math.floor(Math.random()*2)],
-                intensity: Math.random()
+                lat: 51.442 + (Math.random()-0.5)*0.06,
+                lng: -0.31 + (Math.random()-0.5)*0.08,
+                species: Math.random() > 0.5 ? 'Red' : 'Fallow',
+                sex: Math.random() > 0.5 ? 'm' : 'f'
             });
         }
     }
-    generateDummyData(51.442, -0.285); // Richmond
-    generateDummyData(51.413, -0.339); // Bushy
+    generateData();
 
     function refreshHeat() {
-        const showRedM = document.getElementById('f-red-m').checked;
-        const showRedF = document.getElementById('f-red-f').checked;
-        const showFalM = document.getElementById('f-fal-m').checked;
-        const showFalF = document.getElementById('f-fal-f').checked;
+        const rM = document.getElementById('f-red-m').checked, rF = document.getElementById('f-red-f').checked;
+        const fM = document.getElementById('f-fal-m').checked, fF = document.getElementById('f-fal-f').checked;
 
-        const filtered = dummySightings.filter(s => {
-            if (s.species === 'Red' && s.sex === 'm') return showRedM;
-            if (s.species === 'Red' && s.sex === 'f') return showRedF;
-            if (s.species === 'Fallow' && s.sex === 'm') return showFalM;
-            if (s.species === 'Fallow' && s.sex === 'f') return showFalF;
-            return false;
-        }).map(s => [s.lat, s.lng, s.intensity]);
-
-        heatLayer.setLatLngs(filtered);
+        const rPoints = dummySightings.filter(s => s.species==='Red' && ((s.sex==='m'&&rM)||(s.sex==='f'&&rF))).map(s => [s.lat, s.lng, 0.8]);
+        const fPoints = dummySightings.filter(s => s.species==='Fallow' && ((s.sex==='m'&&fM)||(s.sex==='f'&&fF))).map(s => [s.lat, s.lng, 0.8]);
+        
+        redHeat.setLatLngs(rPoints);
+        fallowHeat.setLatLngs(fPoints);
     }
-
-    function toggleFilters() { document.getElementById('filter-box').classList.toggle('show'); }
 
     function updateUI() {
         const isBushy = map.getCenter().lng < -0.31;
         document.getElementById('park-name').innerText = isBushy ? "📍 Bushy Park" : "📍 Richmond Park";
-        const now = new Date();
-        document.getElementById('timer-display').innerText = `GATES CLOSING IN: 3h 12m`;
+        document.getElementById('timer-display').innerText = isBushy ? "GATES CLOSING IN: 12h 00m" : "GATES CLOSING IN: 9h 30m";
     }
 
-    function startWizard() { 
-        document.getElementById('main-ui').style.display='none'; 
-        document.getElementById('step-1').classList.add('active'); 
-        document.getElementById('pin-selector').style.display='block'; 
-    }
+    function toggleFilters() { document.getElementById('filter-box').classList.toggle('show'); }
+    function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
+    function openGallery() { document.getElementById('gallery').style.display='flex'; }
+    function closeGallery() { document.getElementById('gallery').style.display='none'; }
+    
+    function startWizard() { document.getElementById('main-ui').style.display='none'; document.getElementById('step-1').classList.add('active'); document.getElementById('pin-selector').style.display='block'; }
+    function hideAll() { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('main-ui').style.display='block'; document.getElementById('pin-selector').style.display='none'; }
 
     function nextStep(s, species) {
         if(species) {
             const labels = species === 'Red' ? ['Stags', 'Hinds'] : ['Bucks', 'Does'];
-            document.getElementById('counters').innerHTML = labels.map((l, i) => `
+            document.getElementById('counters').innerHTML = labels.map(l => `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:15px; border-radius:12px; margin-bottom:10px;">
                     <span style="font-weight:bold;">${l}</span>
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <button style="width:40px; height:40px; border-radius:10px; border:none; background:#2d5a27; color:white; font-size:1.2rem;">-</button>
-                        <span style="font-weight:800;">0</span>
-                        <button style="width:40px; height:40px; border-radius:10px; border:none; background:#2d5a27; color:white; font-size:1.2rem;">+</button>
-                    </div>
-                </div>
-            `).join('');
+                    <div style="display:flex; align-items:center; gap:15px;"><button style="width:40px; height:40px; border-radius:10px; border:none; background:#2d5a27; color:white;">-</button><span>0</span><button style="width:40px; height:40px; border-radius:10px; border:none; background:#2d5a27; color:white;">+</button></div>
+                </div>`).join('');
         }
         document.querySelectorAll('.step').forEach(div => div.classList.remove('active'));
         document.getElementById('step-'+s).classList.add('active');
     }
 
-    function hideAll() {
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('main-ui').style.display='block';
-        document.getElementById('pin-selector').style.display='none';
-    }
-
-    function toggleMenu() { 
-        document.getElementById('side-menu').classList.toggle('open'); 
-        document.getElementById('menu-overlay').classList.toggle('active');
-    }
-
     function submitSighting() { alert("Reported!"); hideAll(); }
-    
+
     map.on('move', updateUI);
     window.onload = () => { refreshHeat(); updateUI(); };
 </script>
