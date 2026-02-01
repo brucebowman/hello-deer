@@ -28,17 +28,27 @@
         .sim-active { background: #d35400 !important; }
 
         .gate-timer { background: #2d5a27; color: white; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 1rem; }
-        .gate-timer.warning { background: #e67e22; }
         .gate-timer.danger { background: #c0392b; }
 
-        .species-toggle { display: flex; gap: 5px; margin-top: 10px; }
-        .spec-btn { flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 8px; background: white; font-weight: bold; font-size: 0.7rem; }
-        .spec-btn.active { border-color: #2d5a27; background: #e8f5e9; }
+        /* Species Toggle & Tooltips */
+        .species-container { position: relative; display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .species-toggle { display: flex; gap: 5px; }
+        .spec-btn { flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 8px; background: white; font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .spec-btn.active { border-color: #2d5a27; background: #e8f5e9; color: #2d5a27; }
+        
+        .help-icon { background: #eee; color: #666; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; cursor: help; border: 1px solid #ccc; }
+        
+        /* Tooltip Style */
+        .tooltip { display: none; background: #333; color: white; padding: 8px; border-radius: 8px; font-size: 0.7rem; position: absolute; bottom: 110%; left: 0; right: 0; z-index: 4000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #333 transparent transparent transparent; }
 
-        #report-form, #id-guide, #video-menu, #privacy-policy { display: none; }
-        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
+        #report-form, #video-menu, #privacy-policy { display: none; }
+        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font-size: 0.9rem; }
+        .gender-icon { font-weight: bold; font-size: 1.1rem; }
+        .male { color: #2980b9; }
+        .female { color: #e84393; }
+
         .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: red; font-size: 24px; }
-        .policy-text { font-size: 0.75rem; color: #444; line-height: 1.4; background: #f9f9f9; padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -54,8 +64,32 @@
     <div id="main-ui">
         <button class="btn-report" onclick="startReporting()">+ Report Sighting</button>
         <button class="btn-sub" onclick="toggleMenu('video-menu')">📖 Discovery & Safety</button>
-        <button class="btn-sub" onclick="toggleMenu('id-guide')">🔍 Deer ID Guide</button>
         <button id="sim-btn" class="btn-sim" onclick="toggleSimulator()">📍 Mode: Real GPS</button>
+    </div>
+
+    <div id="report-form">
+        <div class="species-container">
+            <div id="tip-species" class="tooltip">Select Red (Large/Plain) or Fallow (Spotted/Palmate Antlers).</div>
+            <div class="species-toggle">
+                <button class="spec-btn active" id="btn-red" onclick="setSpecies('Red')">Red <span class="help-icon" onclick="showTip('tip-species')">?</span></button>
+                <button class="spec-btn" id="btn-fallow" onclick="setSpecies('Fallow')">Fallow <span class="help-icon" onclick="showTip('tip-species')">?</span></button>
+            </div>
+        </div>
+
+        <div style="position:relative;">
+            <div id="tip-gender" class="tooltip">Stags/Bucks have antlers. Hinds/Does do not.</div>
+            <div class="counter-row">
+                <span><span class="gender-icon male">♂</span> Stags/Bucks <span class="help-icon" onclick="showTip('tip-gender')">?</span></span>
+                <button onclick="change('m', 1)">+ <span id="m-count">0</span></button>
+            </div>
+            <div class="counter-row">
+                <span><span class="gender-icon female">♀</span> Hinds/Does <span class="help-icon" onclick="showTip('tip-gender')">?</span></span>
+                <button onclick="change('f', 1)">+ <span id="f-count">0</span></button>
+            </div>
+        </div>
+
+        <button class="btn-report" style="background:#e67e22; margin-top:10px;" onclick="submitSighting()">Confirm Sighting</button>
+        <button class="btn-sub" onclick="hideAll()" style="background:#666">Cancel</button>
     </div>
 
     <div id="video-menu">
@@ -67,30 +101,8 @@
 
     <div id="privacy-policy">
         <h4>Privacy & Conservation</h4>
-        <div class="policy-text">
-            <p><b>1. Location Data:</b> Exact location used for Ranger reports; never shown to public.</p>
-            <p><b>2. Fuzzy Maps:</b> Public sightings are blurred by 50-100m.</p>
-            <p><b>3. Anonymous:</b> No personal identity is stored.</p>
-        </div>
+        <p style="font-size:0.75rem;">Exact location shared with Rangers; Fuzzy location shared with public to protect wildlife.</p>
         <button class="btn-sub" onclick="toggleMenu('video-menu')">Back</button>
-    </div>
-
-    <div id="id-guide">
-        <h4>Deer ID</h4>
-        <p><b>Red:</b> Large, branched antlers.</p>
-        <p><b>Fallow:</b> Palmate antlers, white spots.</p>
-        <button class="btn-sub" onclick="hideAll()" style="background:#666">Close</button>
-    </div>
-
-    <div id="report-form">
-        <div class="species-toggle">
-            <button class="spec-btn active" id="btn-red" onclick="setSpecies('Red')">Red</button>
-            <button class="spec-btn" id="btn-fallow" onclick="setSpecies('Fallow')">Fallow</button>
-        </div>
-        <div class="counter-row"><span>Stags/Bucks</span><button onclick="change('m', 1)">+ <span id="m-count">0</span></button></div>
-        <div class="counter-row"><span>Hinds/Does</span><button onclick="change('f', 1)">+ <span id="f-count">0</span></button></div>
-        <button class="btn-report" style="background:#e67e22" onclick="submitSighting()">Confirm Sighting</button>
-        <button class="btn-sub" onclick="hideAll()" style="background:#666">Cancel</button>
     </div>
 </div>
 
@@ -129,32 +141,26 @@
 
     function updateTimer() {
         const now = new Date();
-        const lockHour = 20; // 8 PM
-        const openHour = 7;  // 7 AM
-        const openMin = 30; // 7:30 AM
-        
-        const lockTime = new Date(); lockTime.setHours(lockHour, 0, 0);
-        const openTime = new Date(); openTime.setHours(openHour, openMin, 0);
-
+        const lockTime = new Date(); lockTime.setHours(20, 0, 0);
+        const openTime = new Date(); openTime.setHours(7, 30, 0);
         const el = document.getElementById('timer-display');
         
-        // Is the park currently closed? (Between 8 PM and 7:30 AM)
         if (now >= lockTime || now < openTime) {
             el.innerHTML = "🚫 GATES CLOSED (Winter Cull)";
             el.className = "gate-timer danger";
         } else {
             const diff = lockTime - now;
             el.innerHTML = `Gates Close in: ${formatTime(diff)}`;
-            
-            // Urgency styling
-            if (diff < 1800000) el.className = "gate-timer danger"; // < 30 mins
-            else if (diff < 3600000) el.className = "gate-timer warning"; // < 1 hour
-            else el.className = "gate-timer";
+            el.className = (diff < 3600000) ? "gate-timer danger" : "gate-timer";
         }
     }
-    // Update every second for the ticking clock feel
-    setInterval(updateTimer, 1000); 
-    updateTimer();
+    setInterval(updateTimer, 1000); updateTimer();
+
+    function showTip(id) {
+        const tip = document.getElementById(id);
+        tip.style.display = 'block';
+        setTimeout(() => { tip.style.display = 'none'; }, 4000);
+    }
 
     function startReporting() { hideAll(); document.getElementById('report-form').style.display='block'; document.getElementById('crosshair').style.display='block'; map.zoomIn(2); }
     function setSpecies(s) { selectedSpecies = s; document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-'+s.toLowerCase()).classList.add('active'); }
@@ -169,7 +175,7 @@
 
     function toggleMenu(id) { hideAll(); document.getElementById(id).style.display = 'block'; }
     function hideAll() { 
-        ['main-ui', 'video-menu', 'id-guide', 'report-form', 'privacy-policy'].forEach(id => {
+        ['main-ui', 'video-menu', 'report-form', 'privacy-policy'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.style.display = 'none';
         });
