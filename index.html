@@ -29,7 +29,6 @@
         .gate-timer { background: #2d5a27; color: white; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 12px; font-weight: bold; }
         .gate-timer.danger { background: #c0392b; }
 
-        /* Wizard Styles */
         .step { display: none; }
         .step.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -40,21 +39,19 @@
             display: flex; align-items: center; justify-content: space-between;
             width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee;
             border-radius: 12px; background: white; font-weight: bold; cursor: pointer;
-            transition: all 0.2s;
         }
-        .choice-btn:active { background: #e8f5e9; border-color: #2d5a27; }
         
         .help-icon { background: #eee; color: #666; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; }
-        
         .tooltip { display: none; background: #333; color: white; padding: 10px; border-radius: 8px; font-size: 0.75rem; position: absolute; bottom: 105%; left: 0; right: 0; z-index: 4000; }
 
-        .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .count-val { font-size: 1.5rem; font-weight: bold; color: #2d5a27; }
-        .count-btn { background: #2d5a27; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; font-size: 1.2rem; cursor: pointer; }
+        .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
+        .count-val { font-size: 1.3rem; font-weight: bold; color: #2d5a27; }
+        .count-btn { background: #2d5a27; color: white; border: none; width: 35px; height: 35px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; }
 
         .gender-icon { font-size: 1.2rem; margin-right: 5px; }
         .male { color: #2980b9; }
         .female { color: #e84393; }
+        .baby { color: #f1c40f; }
 
         .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: red; font-size: 30px; font-weight: 100; }
     </style>
@@ -107,6 +104,15 @@
             </div>
         </div>
 
+        <div class="counter-box">
+            <span><span class="gender-icon baby">👶</span> <b id="label-baby">Calves</b></span>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <button class="count-btn" onclick="change('b', -1)">-</button>
+                <span id="b-count" class="count-val">0</span>
+                <button class="count-btn" onclick="change('b', 1)">+</button>
+            </div>
+        </div>
+
         <button class="btn-report" style="background:#e67e22; margin-top:10px;" onclick="submitSighting()">Confirm Sighting</button>
         <button class="btn-sub" onclick="nextStep(1)" style="background:#666">Back</button>
     </div>
@@ -126,7 +132,7 @@
     let heat = L.heatLayer([[51.442, -0.285, 0.5]], {radius: 35, blur: 20}).addTo(map);
 
     let isSimulating = false;
-    let reportData = { species: '', m: 0, f: 0 };
+    let reportData = { species: '', m: 0, f: 0, b: 0 };
 
     function formatTime(ms) {
         let s = Math.floor(ms / 1000);
@@ -161,9 +167,9 @@
     function nextStep(step, speciesChoice) {
         if (speciesChoice) {
             reportData.species = speciesChoice;
-            // Update labels based on species
             document.getElementById('label-male').innerText = (speciesChoice === 'Red') ? 'Stags' : 'Bucks';
             document.getElementById('label-female').innerText = (speciesChoice === 'Red') ? 'Hinds' : 'Does';
+            document.getElementById('label-baby').innerText = (speciesChoice === 'Red') ? 'Calves' : 'Fawns';
         }
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step-' + step).classList.add('active');
@@ -181,16 +187,16 @@
     }
 
     function submitSighting() {
-        if (reportData.m === 0 && reportData.f === 0) {
+        if (reportData.m === 0 && reportData.f === 0 && reportData.b === 0) {
             alert("Please add at least one deer to the report!");
             return;
         }
         document.getElementById('alert-sound').play().catch(()=>{});
-        alert(`Confirmed: ${reportData.m + reportData.f} ${reportData.species} deer reported. Thank you for contributing to conservation!`);
+        let total = reportData.m + reportData.f + reportData.b;
+        alert(`Confirmed: ${total} ${reportData.species} deer reported. Your data helps protect the park!`);
         hideAll();
-        reportData = { species: '', m: 0, f: 0 };
-        document.getElementById('m-count').innerText = 0;
-        document.getElementById('f-count').innerText = 0;
+        reportData = { species: '', m: 0, f: 0, b: 0 };
+        ['m', 'f', 'b'].forEach(t => document.getElementById(t + '-count').innerText = 0);
     }
 
     function toggleMenu(id) { hideAll(); document.getElementById(id).classList.add('active'); }
