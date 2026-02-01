@@ -10,40 +10,46 @@
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
     <style>
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; background: #222; }
-        #map { height: 100vh; width: 100vw; background: #ddd; }
+        /* Mobile-first height fix */
+        :root { --vh: 1vh; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; background: #222; height: 100vh; height: calc(var(--vh) * 100); }
         
+        #map { height: 100%; width: 100vw; z-index: 1; }
+        
+        /* Move Zoom Controls to Top Right */
+        .leaflet-top.leaflet-left { left: auto; right: 10px; top: 10px; }
+
         .ui-panel {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             z-index: 3000; background: white; padding: 20px; border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 380px;
         }
 
-        .logo { font-weight: bold; color: #2d5a27; font-size: 1.3rem; margin-bottom: 10px; text-align: center; }
+        .logo { font-weight: bold; color: #2d5a27; font-size: 1.2rem; margin-bottom: 8px; text-align: center; }
         
+        /* Non-button Timer Status */
+        .status-bar { 
+            background: #f1f2f6; color: #2d5a27; padding: 10px; border-radius: 12px; 
+            text-align: center; margin-bottom: 15px; font-weight: bold; font-size: 0.9rem;
+            border: 1px solid #ddd;
+        }
+        .status-bar.danger { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+
         .btn-report { background: #2d5a27; color: white; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
         .btn-sub { background: #34495e; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; }
         .btn-sim { background: #95a5a6; color: white; border: none; padding: 8px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 12px; font-size: 0.7rem; text-transform: uppercase; }
         .sim-active { background: #d35400 !important; }
 
-        .gate-timer { background: #2d5a27; color: white; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 12px; font-weight: bold; }
-        .gate-timer.danger { background: #c0392b; }
-
         .step { display: none; }
-        .step.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .step.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .wizard-title { font-weight: bold; font-size: 1rem; margin-bottom: 15px; color: #333; text-align: center; }
-        
         .choice-btn { 
             display: flex; align-items: center; justify-content: space-between;
             width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee;
             border-radius: 12px; background: white; font-weight: bold; cursor: pointer;
         }
         
-        .help-icon { background: #eee; color: #666; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; }
-        .tooltip { display: none; background: #333; color: white; padding: 10px; border-radius: 8px; font-size: 0.75rem; position: absolute; bottom: 105%; left: 0; right: 0; z-index: 4000; }
-
         .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
         .count-val { font-size: 1.3rem; font-weight: bold; color: #2d5a27; }
         .count-btn { background: #2d5a27; color: white; border: none; width: 35px; height: 35px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; }
@@ -53,7 +59,12 @@
         .female { color: #e84393; }
         .baby { color: #f1c40f; }
 
-        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: red; font-size: 30px; font-weight: 100; }
+        /* Crosshair: Fixed visibility */
+        .crosshair { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            z-index: 2000; pointer-events: none; display: none; color: #ff4757; 
+            font-size: 40px; font-weight: 200; 
+        }
     </style>
 </head>
 <body>
@@ -64,61 +75,51 @@
 <div class="ui-panel">
     <div id="main-ui">
         <div class="logo">🦌 Hello Deer <small style="font-weight: normal; color: #666;">DAPP</small></div>
-        <div id="timer-display" class="gate-timer">Loading Status...</div>
+        <div id="timer-display" class="status-bar">Syncing with Park...</div>
         <button class="btn-report" onclick="startWizard()">+ Report a Sighting</button>
         <button class="btn-sub" onclick="toggleMenu('video-menu')">📖 Discovery & Safety</button>
         <button id="sim-btn" class="btn-sim" onclick="toggleSimulator()">📍 Mode: Real GPS</button>
     </div>
 
     <div id="step-1" class="step">
-        <div class="wizard-title">Step 1: Which species?</div>
-        <div style="position:relative;">
-            <div id="tip-red" class="tooltip">RED: Large, branched antlers, plain brown coat.</div>
-            <button class="choice-btn" onclick="nextStep(2, 'Red')">🔴 Red Deer <span class="help-icon" onclick="event.stopPropagation(); showTip('tip-red')">?</span></button>
-        </div>
-        <div style="position:relative;">
-            <div id="tip-fallow" class="tooltip">FALLOW: Spotted coat, palm-shaped antlers, black/white tail.</div>
-            <button class="choice-btn" onclick="nextStep(2, 'Fallow')">⚪ Fallow Deer <span class="help-icon" onclick="event.stopPropagation(); showTip('tip-fallow')">?</span></button>
-        </div>
+        <h3 style="text-align:center; margin-top:0;">Which Species?</h3>
+        <button class="choice-btn" onclick="nextStep(2, 'Red')">🔴 Red Deer <span>➔</span></button>
+        <button class="choice-btn" onclick="nextStep(2, 'Fallow')">⚪ Fallow Deer <span>➔</span></button>
         <button class="btn-sub" onclick="hideAll()" style="background:#666">Cancel</button>
     </div>
 
     <div id="step-2" class="step">
-        <div class="wizard-title" id="step-2-title">Step 2: How many?</div>
-        
+        <h3 style="text-align:center; margin-top:0;" id="step-2-title">How many?</h3>
         <div class="counter-box">
-            <span><span class="gender-icon male">♂</span> <b id="label-male">Stags</b></span>
+            <span><span class="gender-icon male">♂</span> <b id="label-male">Males</b></span>
             <div style="display:flex; align-items:center; gap:15px;">
                 <button class="count-btn" onclick="change('m', -1)">-</button>
                 <span id="m-count" class="count-val">0</span>
                 <button class="count-btn" onclick="change('m', 1)">+</button>
             </div>
         </div>
-
         <div class="counter-box">
-            <span><span class="gender-icon female">♀</span> <b id="label-female">Hinds</b></span>
+            <span><span class="gender-icon female">♀</span> <b id="label-female">Females</b></span>
             <div style="display:flex; align-items:center; gap:15px;">
                 <button class="count-btn" onclick="change('f', -1)">-</button>
                 <span id="f-count" class="count-val">0</span>
                 <button class="count-btn" onclick="change('f', 1)">+</button>
             </div>
         </div>
-
         <div class="counter-box">
-            <span><span class="gender-icon baby">👶</span> <b id="label-baby">Calves</b></span>
+            <span><span class="gender-icon baby">👶</span> <b id="label-baby">Young</b></span>
             <div style="display:flex; align-items:center; gap:15px;">
                 <button class="count-btn" onclick="change('b', -1)">-</button>
                 <span id="b-count" class="count-val">0</span>
                 <button class="count-btn" onclick="change('b', 1)">+</button>
             </div>
         </div>
-
         <button class="btn-report" style="background:#e67e22; margin-top:10px;" onclick="submitSighting()">Confirm Sighting</button>
         <button class="btn-sub" onclick="nextStep(1)" style="background:#666">Back</button>
     </div>
 
     <div id="video-menu" class="step">
-        <h4>Discovery</h4>
+        <h3 style="text-align:center;">Discovery</h3>
         <button class="btn-sub" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">▶️ Safety Film</button>
         <button class="btn-sub" onclick="hideAll()">Back</button>
     </div>
@@ -127,10 +128,13 @@
 <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3"></audio>
 
 <script>
-    const map = L.map('map').setView([51.442, -0.285], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    let heat = L.heatLayer([[51.442, -0.285, 0.5]], {radius: 35, blur: 20}).addTo(map);
+    // Fix for mobile address bar height
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
 
+    const map = L.map('map', { zoomControl: true }).setView([51.442, -0.285], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
     let isSimulating = false;
     let reportData = { species: '', m: 0, f: 0, b: 0 };
 
@@ -138,7 +142,7 @@
         let s = Math.floor(ms / 1000);
         let h = Math.floor(s / 3600); s %= 3600;
         let m = Math.floor(s / 60); s %= 60;
-        return `${h}h:${m.toString().padStart(2, '0')}m:${s.toString().padStart(2, '0')}s`;
+        return `${h}h ${m}m ${s}s`;
     }
 
     function updateTimer() {
@@ -146,13 +150,14 @@
         const lock = new Date(); lock.setHours(20, 0, 0);
         const open = new Date(); open.setHours(7, 30, 0);
         const el = document.getElementById('timer-display');
+        
         if (now >= lock || now < open) {
             el.innerHTML = "🚫 GATES CLOSED (Winter Cull)";
-            el.className = "gate-timer danger";
+            el.className = "status-bar danger";
         } else {
             const diff = lock - now;
             el.innerHTML = `Gates Close in: ${formatTime(diff)}`;
-            el.className = (diff < 3600000) ? "gate-timer danger" : "gate-timer";
+            el.className = (diff < 3600000) ? "status-bar danger" : "status-bar";
         }
     }
     setInterval(updateTimer, 1000); updateTimer();
@@ -160,8 +165,8 @@
     function startWizard() {
         hideAll();
         document.getElementById('step-1').classList.add('active');
+        document.getElementById('main-ui').style.display = 'none';
         document.getElementById('crosshair').style.display = 'block';
-        map.zoomIn(1);
     }
 
     function nextStep(step, speciesChoice) {
@@ -180,26 +185,18 @@
         document.getElementById(type + '-count').innerText = reportData[type];
     }
 
-    function showTip(id) {
-        const tip = document.getElementById(id);
-        tip.style.display = 'block';
-        setTimeout(() => { tip.style.display = 'none'; }, 5000);
-    }
-
     function submitSighting() {
-        if (reportData.m === 0 && reportData.f === 0 && reportData.b === 0) {
-            alert("Please add at least one deer to the report!");
-            return;
+        if (reportData.m + reportData.f + reportData.b === 0) {
+            alert("Add at least one deer!"); return;
         }
         document.getElementById('alert-sound').play().catch(()=>{});
-        let total = reportData.m + reportData.f + reportData.b;
-        alert(`Confirmed: ${total} ${reportData.species} deer reported. Your data helps protect the park!`);
+        alert(`Reported ${reportData.m + reportData.f + reportData.b} ${reportData.species} deer.`);
         hideAll();
         reportData = { species: '', m: 0, f: 0, b: 0 };
         ['m', 'f', 'b'].forEach(t => document.getElementById(t + '-count').innerText = 0);
     }
 
-    function toggleMenu(id) { hideAll(); document.getElementById(id).classList.add('active'); }
+    function toggleMenu(id) { hideAll(); document.getElementById(id).classList.add('active'); document.getElementById('main-ui').style.display = 'none'; }
 
     function hideAll() {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -211,7 +208,7 @@
         isSimulating = !isSimulating;
         const btn = document.getElementById('sim-btn');
         if (isSimulating) {
-            btn.classList.add('sim-active'); btn.innerText = "📍 Mode: Simulated (Pen Ponds)";
+            btn.classList.add('sim-active'); btn.innerText = "📍 Simulated (Pen Ponds)";
             map.flyTo([51.442, -0.285], 16);
         } else {
             btn.classList.remove('sim-active'); btn.innerText = "📍 Mode: Real GPS";
