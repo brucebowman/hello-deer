@@ -13,7 +13,6 @@
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; background: #222; }
         #map { height: 100vh; width: 100vw; background: #ddd; }
         
-        /* The UI Panel */
         .ui-panel {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             z-index: 3000; background: white; padding: 15px; border-radius: 20px;
@@ -23,18 +22,15 @@
 
         .logo { font-weight: bold; color: #2d5a27; font-size: 1.3rem; margin-bottom: 5px; text-align: center; }
         
-        /* Buttons */
         .btn-report { background: #2d5a27; color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .btn-sub { background: #34495e; color: white; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 0.8rem; }
         .btn-sim { background: #95a5a6; color: white; border: none; padding: 8px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 0.7rem; text-transform: uppercase; }
         .sim-active { background: #d35400 !important; }
 
-        /* Timer & Alerts */
-        .gate-timer { background: #2d5a27; color: white; padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; }
+        .gate-timer { background: #2d5a27; color: white; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 1rem; }
         .gate-timer.warning { background: #e67e22; }
         .gate-timer.danger { background: #c0392b; }
 
-        /* Species Select */
         .species-toggle { display: flex; gap: 5px; margin-top: 10px; }
         .spec-btn { flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 8px; background: white; font-weight: bold; font-size: 0.7rem; }
         .spec-btn.active { border-color: #2d5a27; background: #e8f5e9; }
@@ -42,7 +38,6 @@
         #report-form, #id-guide, #video-menu, #privacy-policy { display: none; }
         .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
         .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: red; font-size: 24px; }
-        
         .policy-text { font-size: 0.75rem; color: #444; line-height: 1.4; background: #f9f9f9; padding: 10px; border-radius: 8px; }
     </style>
 </head>
@@ -54,7 +49,7 @@
 <div class="ui-panel">
     <div class="logo">🦌 Hello Deer <small style="font-weight: normal; color: #666;">DAPP</small></div>
     
-    <div id="timer-display" class="gate-timer">Checking Gate Times...</div>
+    <div id="timer-display" class="gate-timer">Loading Status...</div>
 
     <div id="main-ui">
         <button class="btn-report" onclick="startReporting()">+ Report Sighting</button>
@@ -73,9 +68,9 @@
     <div id="privacy-policy">
         <h4>Privacy & Conservation</h4>
         <div class="policy-text">
-            <p><b>1. Location Data:</b> We use your GPS to help Rangers find injured wildlife. Your exact location is <u>never</u> shown to other users.</p>
-            <p><b>2. Fuzzy Maps:</b> Public sightings are obscured by a 50-100m "blur" to prevent deer harassment.</p>
-            <p><b>3. Anonymous:</b> No personal identity or contact info is stored. Reports are tied to anonymous sessions.</p>
+            <p><b>1. Location Data:</b> Exact location used for Ranger reports; never shown to public.</p>
+            <p><b>2. Fuzzy Maps:</b> Public sightings are blurred by 50-100m.</p>
+            <p><b>3. Anonymous:</b> No personal identity is stored.</p>
         </div>
         <button class="btn-sub" onclick="toggleMenu('video-menu')">Back</button>
     </div>
@@ -102,13 +97,10 @@
 <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3"></audio>
 
 <script>
-    // Initialize Map
     const map = L.map('map').setView([51.442, -0.285], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    
     let heat = L.heatLayer([[51.442, -0.285, 0.5]], {radius: 35, blur: 20}).addTo(map);
 
-    // Simulator State
     let isSimulating = false;
     let selectedSpecies = 'Red';
     let counts = { m: 0, f: 0 };
@@ -126,17 +118,43 @@
         }
     }
 
+    function formatTime(ms) {
+        let s = Math.floor(ms / 1000);
+        let h = Math.floor(s / 3600);
+        s %= 3600;
+        let m = Math.floor(s / 60);
+        s %= 60;
+        return `${h}h:${m.toString().padStart(2, '0')}m:${s.toString().padStart(2, '0')}s`;
+    }
+
     function updateTimer() {
         const now = new Date();
-        const lock = new Date(); lock.setHours(20, 0, 0);
-        const diff = lock - now;
-        const mins = Math.floor(diff / 60000);
+        const lockHour = 20; // 8 PM
+        const openHour = 7;  // 7 AM
+        const openMin = 30; // 7:30 AM
+        
+        const lockTime = new Date(); lockTime.setHours(lockHour, 0, 0);
+        const openTime = new Date(); openTime.setHours(openHour, openMin, 0);
+
         const el = document.getElementById('timer-display');
-        if (mins < 0) { el.innerHTML = "🚫 PARK CLOSED"; el.className = "gate-timer danger"; }
-        else if (mins < 30) { el.innerHTML = `⚠️ EXIT NOW: ${mins}m left`; el.className = "gate-timer danger"; }
-        else { el.innerHTML = `Gates lock in ${mins} mins`; el.className = "gate-timer"; }
+        
+        // Is the park currently closed? (Between 8 PM and 7:30 AM)
+        if (now >= lockTime || now < openTime) {
+            el.innerHTML = "🚫 GATES CLOSED (Winter Cull)";
+            el.className = "gate-timer danger";
+        } else {
+            const diff = lockTime - now;
+            el.innerHTML = `Gates Close in: ${formatTime(diff)}`;
+            
+            // Urgency styling
+            if (diff < 1800000) el.className = "gate-timer danger"; // < 30 mins
+            else if (diff < 3600000) el.className = "gate-timer warning"; // < 1 hour
+            else el.className = "gate-timer";
+        }
     }
-    setInterval(updateTimer, 60000); updateTimer();
+    // Update every second for the ticking clock feel
+    setInterval(updateTimer, 1000); 
+    updateTimer();
 
     function startReporting() { hideAll(); document.getElementById('report-form').style.display='block'; document.getElementById('crosshair').style.display='block'; map.zoomIn(2); }
     function setSpecies(s) { selectedSpecies = s; document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-'+s.toLowerCase()).classList.add('active'); }
@@ -151,7 +169,10 @@
 
     function toggleMenu(id) { hideAll(); document.getElementById(id).style.display = 'block'; }
     function hideAll() { 
-        ['main-ui', 'video-menu', 'id-guide', 'report-form', 'privacy-policy'].forEach(id => document.getElementById(id).style.display = 'none');
+        ['main-ui', 'video-menu', 'id-guide', 'report-form', 'privacy-policy'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'none';
+        });
         document.getElementById('main-ui').style.display = 'block';
         document.getElementById('crosshair').style.display = 'none';
     }
