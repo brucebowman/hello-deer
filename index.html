@@ -9,90 +9,75 @@
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
         #map { height: 100vh; width: 100vw; }
         
-        /* The Crosshairs */
-        #crosshair {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2000; pointer-events: none;
-            display: none; /* Only show during reporting */
-        }
-        .crosshair-line { position: absolute; background: rgba(255, 0, 0, 0.6); }
-        .h-line { width: 40px; height: 2px; left: -20px; top: -1px; }
-        .v-line { width: 2px; height: 40px; top: -20px; left: -1px; }
-        .center-dot { width: 4px; height: 4px; background: red; border-radius: 50%; position: absolute; top: -2px; left: -2px; }
-
         .ui-panel {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             z-index: 3000; background: white; padding: 15px; border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 90%; max-width: 400px;
         }
+
+        /* Video Menu Styles */
+        #video-menu { display: none; padding: 10px; }
+        .video-link { 
+            display: block; background: #f0f0f0; padding: 10px; margin-bottom: 8px; 
+            border-radius: 10px; text-decoration: none; color: #333; font-size: 0.9rem;
+        }
+
         .btn-report { background: #2d5a27; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        #report-form { display: none; }
-        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
-        .instr { font-size: 0.8rem; color: #666; margin-bottom: 10px; text-align: center; }
+        .btn-secondary { background: #34495e; color: white; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; }
     </style>
 </head>
 <body>
 
 <div id="map"></div>
 
-<div id="crosshair">
-    <div class="crosshair-line h-line"></div>
-    <div class="crosshair-line v-line"></div>
-    <div class="center-dot"></div>
-</div>
-
 <div class="ui-panel">
     <div id="main-ui">
         <button class="btn-report" onclick="startReporting()">+ Report Sighting</button>
+        <button class="btn-secondary" onclick="toggleMenu()">📖 Discovery & Safety</button>
     </div>
 
-    <div id="report-form">
-        <div class="instr">📍 Pan map to place deer under crosshairs</div>
-        <div class="counter-row"><span>Stags (Male)</span><button onclick="change('m', 1)">+ <span id="m-count">0</span></button></div>
-        <div class="counter-row"><span>Hinds (Female)</span><button onclick="change('f', 1)">+ <span id="f-count">0</span></button></div>
-        <div class="counter-row"><span>Calves (Babies)</span><button onclick="change('b', 1)">+ <span id="b-count">0</span></button></div>
-        <button class="btn-report" onclick="submitSighting()" style="background: #e67e22; margin-top:10px;">Confirm & Report</button>
-        <button onclick="cancelReporting()" style="width:100%; background:none; border:none; color:#666; margin-top:8px; cursor:pointer;">Cancel</button>
+    <div id="video-menu">
+        <h4 style="margin-top:0">Deer Discovery</h4>
+        <a href="https://www.youtube.com/watch?v=acwRCNxqWbA" target="_blank" class="video-link">🦌 Official: Deer Safety Film</a>
+        <a href="https://www.youtube.com/watch?v=AAP_tqiYB8c" target="_blank" class="video-link">🌿 Wildlife of Richmond Park</a>
+        <a href="https://www.youtube.com/watch?v=Vk4XfviEQLM" target="_blank" class="video-link">📸 How to Photograph Deer Safely</a>
+        <button onclick="toggleMenu()" style="width:100%; border:none; background:none; color:#666; cursor:pointer;">Back to Map</button>
+    </div>
+
+    <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3"></audio>
+
+    <div id="report-form" style="display:none;">
+        <button class="btn-report" onclick="submitSighting()">Confirm & Report</button>
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    const map = L.map('map').setView([51.442, -0.285], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    // ... (Previous Map & Crosshair Logic) ...
 
-    let counts = { m: 0, f: 0, b: 0 };
-
-    function startReporting() {
-        document.getElementById('main-ui').style.display = 'none';
-        document.getElementById('report-form').style.display = 'block';
-        document.getElementById('crosshair').style.display = 'block';
-        map.setZoom(17); // Zoom in for precision
-    }
-
-    function cancelReporting() {
-        document.getElementById('main-ui').style.display = 'block';
-        document.getElementById('report-form').style.display = 'none';
-        document.getElementById('crosshair').style.display = 'none';
-        counts = { m: 0, f: 0, b: 0 };
-        document.querySelectorAll('[id$="-count"]').forEach(el => el.innerText = 0);
+    function toggleMenu() {
+        const menu = document.getElementById('video-menu');
+        const main = document.getElementById('main-ui');
+        if (menu.style.display === 'none' || menu.style.display === '') {
+            menu.style.display = 'block';
+            main.style.display = 'none';
+        } else {
+            menu.style.display = 'none';
+            main.style.display = 'block';
+        }
     }
 
     function submitSighting() {
-        const preciseCoords = map.getCenter();
-        const total = counts.m + counts.f + counts.b;
-        
-        // Simulating the backend: Precise to Rangers, Fuzzy to Public
-        console.log(`SENT TO RANGERS: ${total} deer at [${preciseCoords.lat}, ${preciseCoords.lng}]`);
-        
-        alert(`Success! Precise location recorded for Rangers.\nHeatmap updated with fuzzy location.\n\nThank you!`);
-        cancelReporting();
-    }
+        // Play Sound
+        const audio = document.getElementById('alert-sound');
+        audio.play().catch(e => console.log("Audio requires user interaction first"));
 
-    function change(type, delta) {
-        counts[type] += delta;
-        document.getElementById(type + '-count').innerText = counts[type];
+        // Haptic Feedback (Vibration)
+        if ("vibrate" in navigator) {
+            navigator.vibrate([100, 50, 100]); // Vibrates: tap-gap-tap
+        }
+
+        alert("Sighting Submitted! Hear the call? Check the heatmap.");
+        // ... (Reset UI logic) ...
     }
 </script>
 </body>
