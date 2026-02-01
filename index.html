@@ -44,12 +44,18 @@
         .step.active { display: block; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .choice-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 12px; background: white; font-weight: bold; cursor: pointer; }
+        .choice-btn { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 12px; background: white; font-weight: bold; cursor: pointer; }
+        
+        /* Identification Help Icon */
+        .help-icon { background: #eee; color: #666; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; font-weight: bold; }
+        .tooltip { display: none; background: #333; color: white; padding: 10px; border-radius: 8px; font-size: 0.75rem; position: absolute; bottom: 110%; left: 0; right: 0; z-index: 5000; text-align: center; font-weight: normal; }
+
         .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
         .count-val { font-size: 1.3rem; font-weight: bold; color: #2d5a27; }
         .count-btn { background: #2d5a27; color: white; border: none; width: 35px; height: 35px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; }
 
         .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: #ff4757; font-size: 40px; font-weight: 200; }
+        .precision-hint { font-size: 0.75rem; color: #e67e22; text-align: center; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -84,8 +90,24 @@
 
     <div id="step-1" class="step">
         <h3 style="text-align:center; margin-top:0;">Which Species?</h3>
-        <button class="choice-btn" onclick="nextStep(2, 'Red')">🔴 Red Deer <span>➔</span></button>
-        <button class="choice-btn" onclick="nextStep(2, 'Fallow')">⚪ Fallow Deer <span>➔</span></button>
+        <div class="precision-hint">Drag map to precisely position crosshairs.</div>
+        
+        <div style="position:relative;">
+            <div id="tip-red" class="tooltip">RED: Large, branched antlers, plain brown coat. No spots.</div>
+            <button class="choice-btn" onclick="nextStep(2, 'Red')">
+                🔴 Red Deer 
+                <span class="help-icon" onclick="event.stopPropagation(); showTip('tip-red')">?</span>
+            </button>
+        </div>
+
+        <div style="position:relative;">
+            <div id="tip-fallow" class="tooltip">FALLOW: Spotted coat (usually), palm-shaped antlers, black/white tail.</div>
+            <button class="choice-btn" onclick="nextStep(2, 'Fallow')">
+                ⚪ Fallow Deer 
+                <span class="help-icon" onclick="event.stopPropagation(); showTip('tip-fallow')">?</span>
+            </button>
+        </div>
+        
         <button class="btn-sub" onclick="hideAll()" style="background:#666">Cancel</button>
     </div>
 
@@ -108,7 +130,6 @@
     const map = L.map('map').setView([51.442, -0.285], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     
-    // Heatmap Simulation
     let heat = L.heatLayer([], {radius: 25, blur: 15}).addTo(map);
     function updateHeatmap() {
         let center = map.getCenter();
@@ -146,9 +167,9 @@
         if (isClosed) {
             let nextOpen = new Date(openTime);
             if (now >= lockTime) nextOpen.setDate(now.getDate() + 1);
-            el.innerHTML = `GATES: <span style="color:#b91c1c">CLOSED (UK Time)</span><br>Opening in ${formatTime(nextOpen - now)}`;
+            el.innerHTML = `GATES: <span style="color:#b91c1c">CLOSED</span><br>Opening in ${formatTime(nextOpen - now)}`;
         } else {
-            el.innerHTML = `GATES: <span style="color:#2d5a27">OPEN (UK Time)</span><br>Closing in ${formatTime(lockTime - now)}`;
+            el.innerHTML = `GATES: <span style="color:#2d5a27">OPEN</span><br>Closing in ${formatTime(lockTime - now)}`;
         }
         el.className = isClosed ? "status-bar danger" : "status-bar";
     }
@@ -174,9 +195,13 @@
         }
     }
 
-    // Initialize
-    window.onload = () => { updateParkHeader(); updateGateStatus(); updateHeatmap(); };
+    function showTip(id) {
+        const tip = document.getElementById(id);
+        tip.style.display = 'block';
+        setTimeout(() => { tip.style.display = 'none'; }, 5000);
+    }
 
+    window.onload = () => { updateParkHeader(); updateGateStatus(); updateHeatmap(); };
     function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
     function startWizard() { hideAll(); document.getElementById('step-1').classList.add('active'); document.getElementById('main-ui').style.display = 'none'; document.getElementById('crosshair').style.display = 'block'; }
     function nextStep(step, speciesChoice) {
