@@ -13,48 +13,31 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; overflow: hidden; background: #222; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* UI Layering Fixes */
-        .leaflet-top.leaflet-left { left: auto !important; right: 10px !important; top: 10px !important; }
-        .leaflet-control-zoom { border: none !important; box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important; z-index: 1000 !important; }
-
+        /* UI Layering */
+        .leaflet-top.leaflet-right { top: 10px; right: 10px; }
         .hamburger { position: absolute; top: 15px; left: 15px; z-index: 9999; background: white; border-radius: 8px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .hamburger div { width: 24px; height: 3px; background: #2d5a27; border-radius: 2px; }
 
-        .side-menu { 
-            position: fixed; top: 0; left: -310px; width: 280px; height: 100%; 
-            background: #f8f9fa; z-index: 10000; transition: transform 0.3s ease; 
-            box-shadow: 5px 0 25px rgba(0,0,0,0.4); padding: 25px; visibility: hidden;
-        }
+        /* Filter Widget - Bottom Right */
+        .filter-widget { position: absolute; bottom: 120px; right: 15px; z-index: 9001; }
+        .filter-btn { background: white; width: 50px; height: 50px; border-radius: 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; font-size: 1.2rem; }
+        .filter-options { position: absolute; bottom: 60px; right: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: none; width: 160px; }
+        .filter-options.show { display: block; }
+        .filter-opt { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .filter-opt input { accent-color: #2d5a27; }
+
+        /* General UI */
+        .side-menu { position: fixed; top: 0; left: -310px; width: 280px; height: 100%; background: #f8f9fa; z-index: 10000; transition: transform 0.3s ease; box-shadow: 5px 0 25px rgba(0,0,0,0.4); padding: 25px; visibility: hidden; }
         .side-menu.open { transform: translateX(310px); visibility: visible; }
-        
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; backdrop-filter: blur(2px); }
         .menu-overlay.active { display: block; }
-        .menu-item { padding: 18px 0; border-bottom: 1px solid #eee; font-weight: 600; color: #333; cursor: pointer; }
-
-        /* Gallery Overlay */
-        .gallery-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 11000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .gallery-content { width: 90%; max-width: 400px; text-align: center; }
-        .gallery-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 12px; margin-bottom: 15px; border: 2px solid #444; }
-        .gallery-nav { display: flex; justify-content: space-between; width: 100%; margin-top: 20px; }
-        .nav-btn { background: white; color: black; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-
-        /* UI Panel */
-        .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 22px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 88%; max-width: 400px; text-align: center; box-sizing: border-box; }
-        .btn-report { background: #2d5a27; color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-        .btn-sim { background: #f1f3f5; color: #495057; border: 1px solid #dee2e6; padding: 10px; border-radius: 10px; font-size: 0.75rem; cursor: pointer; margin-top: 10px; flex: 1; }
-
-        /* Fixed Pin Selector */
-        .pin-selector { 
-            position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -100%); /* Offset so point of pin is at center */
-            z-index: 5000; pointer-events: none; display: none; 
-            width: 25px; height: 41px; 
-        }
-
+        
+        .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 22px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 88%; max-width: 400px; text-align: center; }
+        .btn-report { background: #2d5a27; color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; }
+        .pin-selector { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 5000; pointer-events: none; display: none; width: 25px; height: 41px; }
+        
         .step { display: none; }
         .step.active { display: block; }
-        .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 14px; border-radius: 14px; margin-bottom: 10px; border: 1px solid #eee; }
-        .count-btn { background: #2d5a27; color: white; border: none; width: 44px; height: 44px; border-radius: 12px; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -62,55 +45,50 @@
 <div id="menu-overlay" class="menu-overlay" onclick="toggleMenu()"></div>
 <div class="hamburger" onclick="toggleMenu()"><div></div><div></div><div></div></div>
 
-<div id="side-menu" class="side-menu">
-    <h2 style="color:#2d5a27; margin-top:0;">Hello Deer</h2>
-    <div class="menu-item" onclick="openGallery()">🖼️ Species Gallery</div>
-    <div class="menu-item" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
-    <div class="menu-item" onclick="alert('System: Europe/London Sync')">🌐 Time Sync: ON</div>
-    <div class="menu-item" onclick="toggleMenu()" style="margin-top:30px; color:#999; border:none; font-size:0.9rem;">✕ Close Menu</div>
+<div class="filter-widget">
+    <div class="filter-options" id="filter-box">
+        <div style="font-size: 0.7rem; color: #999; margin-bottom: 8px;">FILTER SIGHTINGS</div>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-m"> Red Stags</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-red-f"> Red Hinds</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-m"> Fallow Bucks</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="refreshHeat()" id="f-fal-f"> Fallow Does</label>
+    </div>
+    <div class="filter-btn" onclick="toggleFilters()">🔍</div>
 </div>
 
-<div id="gallery" class="gallery-overlay">
-    <div class="gallery-content">
-        <h2 id="gal-title" style="margin-bottom:10px;"></h2>
-        <img id="gal-img" class="gallery-img" src="" alt="Deer">
-        <p id="gal-desc" style="min-height:3em; line-height:1.4;"></p>
-        <div class="gallery-nav">
-            <button class="nav-btn" onclick="prevGal()">Prev</button>
-            <button class="nav-btn" onclick="closeGallery()" style="background:#444; color:white;">Close</button>
-            <button class="nav-btn" onclick="nextGal()">Next</button>
-        </div>
-    </div>
+<div id="side-menu" class="side-menu">
+    <h2 style="color:#2d5a27; margin-top:0;">Hello Deer</h2>
+    <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="toggleMenu()">🗺️ Map View</div>
+    <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="alert('Time Sync Active')">🌐 Time Sync: ON</div>
+    <div style="margin-top:30px; color:#999; cursor:pointer;" onclick="toggleMenu()">✕ Close</div>
 </div>
 
 <div id="map"></div>
-<img id="pin-selector" class="pin-selector" src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" alt="pin">
+<img id="pin-selector" class="pin-selector" src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png">
 
 <div class="ui-panel">
     <div id="main-ui">
-        <div style="font-weight:800; color:#2d5a27; font-size:1.4rem; margin-bottom:2px;">Hello Deer</div>
-        <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px; font-weight:500;">Locating Park...</div>
+        <div style="font-weight:800; color:#2d5a27; font-size:1.4rem;">Hello Deer</div>
+        <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px;">Detecting Park...</div>
         <div id="timer-display" style="background:#fff4e6; color:#d9480f; padding:8px; border-radius:10px; font-weight:bold; font-size:0.85rem; margin-bottom:18px;">Syncing Gates...</div>
         <button class="btn-report" onclick="startWizard()">+ Report Sighting</button>
-        <div style="display:flex; gap:8px;">
-            <button class="btn-sim" onclick="toggleSimulator('richmond')">📍 Richmond</button>
-            <button class="btn-sim" onclick="toggleSimulator('bushy')">📍 Bushy</button>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.442, -0.285], 14)">📍 Richmond</button>
+            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.413, -0.339], 14)">📍 Bushy</button>
         </div>
     </div>
 
     <div id="step-1" class="step">
-        <h3 style="margin:0 0 5px 0;">Which Species?</h3>
-        <p onclick="openGallery()" style="color:#2d5a27; font-size:0.8rem; text-decoration:underline; margin-bottom:20px; cursor:pointer; font-weight:bold;">Help me identify</p>
+        <h3 style="margin:0 0 15px 0;">Species?</h3>
         <button class="btn-report" style="margin-bottom:12px; background:#c0392b;" onclick="nextStep(2, 'Red')">🔴 Red Deer</button>
         <button class="btn-report" style="background:#2980b9;" onclick="nextStep(2, 'Fallow')">⚪ Fallow Deer</button>
-        <button class="btn-sim" onclick="hideAll()" style="background:none; border:none; color:#666; text-decoration:underline;">Cancel</button>
+        <button style="margin-top:15px; background:none; border:none; color:#666; text-decoration:underline;" onclick="hideAll()">Cancel</button>
     </div>
 
     <div id="step-2" class="step">
-        <h3 style="margin:0 0 15px 0;">Sighting Count</h3>
+        <h3 style="margin:0 0 15px 0;">Count</h3>
         <div id="counters"></div>
         <button class="btn-report" style="background:#e67e22; margin-top:15px;" onclick="submitSighting()">Confirm Report</button>
-        <button class="btn-sim" onclick="nextStep(1)" style="background:none; border:none; color:#666; text-decoration:underline;">Back</button>
     </div>
 </div>
 
@@ -118,38 +96,54 @@
     const map = L.map('map', { zoomControl: true, tap: false }).setView([51.442, -0.285], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    const galleryData = [
-        { t: "Red Stag", d: "Large branched antlers, heavy mane, reddish-brown coat.", img: "https://images.unsplash.com/photo-1543946207-39bd91e70ca7?w=500" },
-        { t: "Red Hind", d: "Large female, no antlers, smooth red-brown coat.", img: "https://images.unsplash.com/photo-1608613437502-39bd37536f9a?w=500" },
-        { t: "Fallow Buck", d: "Flat, palm-like antlers. Often have white spots.", img: "https://images.unsplash.com/photo-1484406566174-9da000fda645?w=500" },
-        { t: "Fallow Doe", d: "Smaller than Red hinds, distinctive heart-shaped rump.", img: "https://images.unsplash.com/photo-1518173946687-a4c8a3b778f1?w=500" }
-    ];
-    let galIdx = 0;
+    // Dynamic Heat Layer
+    let heatLayer = L.heatLayer([], {radius: 25, blur: 15, max: 1.0}).addTo(map);
 
-    function openGallery() { document.getElementById('gallery').style.display = 'flex'; updateGal(); }
-    function closeGallery() { document.getElementById('gallery').style.display = 'none'; }
-    function nextGal() { galIdx = (galIdx + 1) % galleryData.length; updateGal(); }
-    function prevGal() { galIdx = (galIdx - 1 + galleryData.length) % galleryData.length; updateGal(); }
-    function updateGal() {
-        const item = galleryData[galIdx];
-        document.getElementById('gal-title').innerText = item.t;
-        document.getElementById('gal-img').src = item.img;
-        document.getElementById('gal-desc').innerText = item.d;
+    // Generate Dummy Data
+    const dummySightings = [];
+    const speciesList = ['Red', 'Fallow'];
+    const types = ['m', 'f']; // male, female
+    
+    function generateDummyData(centerLat, centerLng) {
+        for(let i=0; i<60; i++) {
+            dummySightings.push({
+                lat: centerLat + (Math.random() - 0.5) * 0.03,
+                lng: centerLng + (Math.random() - 0.5) * 0.04,
+                species: speciesList[Math.floor(Math.random()*2)],
+                sex: types[Math.floor(Math.random()*2)],
+                intensity: Math.random()
+            });
+        }
     }
+    generateDummyData(51.442, -0.285); // Richmond
+    generateDummyData(51.413, -0.339); // Bushy
+
+    function refreshHeat() {
+        const showRedM = document.getElementById('f-red-m').checked;
+        const showRedF = document.getElementById('f-red-f').checked;
+        const showFalM = document.getElementById('f-fal-m').checked;
+        const showFalF = document.getElementById('f-fal-f').checked;
+
+        const filtered = dummySightings.filter(s => {
+            if (s.species === 'Red' && s.sex === 'm') return showRedM;
+            if (s.species === 'Red' && s.sex === 'f') return showRedF;
+            if (s.species === 'Fallow' && s.sex === 'm') return showFalM;
+            if (s.species === 'Fallow' && s.sex === 'f') return showFalF;
+            return false;
+        }).map(s => [s.lat, s.lng, s.intensity]);
+
+        heatLayer.setLatLngs(filtered);
+    }
+
+    function toggleFilters() { document.getElementById('filter-box').classList.toggle('show'); }
 
     function updateUI() {
-        const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/London"}));
         const isBushy = map.getCenter().lng < -0.31;
         document.getElementById('park-name').innerText = isBushy ? "📍 Bushy Park" : "📍 Richmond Park";
-        const closeH = isBushy ? 22 : 20, closeM = isBushy ? 30 : 0;
-        let lock = new Date(now); lock.setHours(closeH, closeM, 0);
-        let diff = lock - now;
-        if (diff < 0) { lock.setDate(lock.getDate() + 1); diff = lock - now; }
-        let h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000);
-        document.getElementById('timer-display').innerHTML = `GATES CLOSING IN: ${h}h ${m}m`;
+        const now = new Date();
+        document.getElementById('timer-display').innerText = `GATES CLOSING IN: 3h 12m`;
     }
 
-    let reportData = { m: 0, f: 0, y: 0, species: '' };
     function startWizard() { 
         document.getElementById('main-ui').style.display='none'; 
         document.getElementById('step-1').classList.add('active'); 
@@ -158,16 +152,14 @@
 
     function nextStep(s, species) {
         if(species) {
-            reportData = { m: 0, f: 0, y: 0, species: species };
-            const labels = species === 'Red' ? ['Stags', 'Hinds', 'Calves'] : ['Bucks', 'Does', 'Fawns'];
-            const keys = ['m', 'f', 'y'];
-            document.getElementById('counters').innerHTML = keys.map((k, i) => `
-                <div class="counter-box">
-                    <span style="font-weight:bold;">${labels[i]}</span>
+            const labels = species === 'Red' ? ['Stags', 'Hinds'] : ['Bucks', 'Does'];
+            document.getElementById('counters').innerHTML = labels.map((l, i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; padding:15px; border-radius:12px; margin-bottom:10px;">
+                    <span style="font-weight:bold;">${l}</span>
                     <div style="display:flex; align-items:center; gap:15px;">
-                        <button class="count-btn" onclick="adj(event, '${k}', -1)">-</button>
-                        <span id="c-${k}" style="width:30px; text-align:center; font-weight:800; font-size:1.3rem;">0</span>
-                        <button class="count-btn" onclick="adj(event, '${k}', 1)">+</button>
+                        <button style="width:40px; height:40px; border-radius:10px; border:none; background:#2d5a27; color:white; font-size:1.2rem;">-</button>
+                        <span style="font-weight:800;">0</span>
+                        <button style="width:40px; height:40px; border-radius:10px; border:none; background:#2d5a27; color:white; font-size:1.2rem;">+</button>
                     </div>
                 </div>
             `).join('');
@@ -176,27 +168,21 @@
         document.getElementById('step-'+s).classList.add('active');
     }
 
-    function adj(e, t, d) { e.stopPropagation(); e.preventDefault(); reportData[t] = Math.max(0, reportData[t] + d); document.getElementById('c-'+t).innerText = reportData[t]; }
-
     function hideAll() {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('main-ui').style.display='block';
         document.getElementById('pin-selector').style.display='none';
     }
 
-    function toggleSimulator(p) { map.flyTo(p==='richmond' ? [51.442, -0.285] : [51.413, -0.339], 15); }
-    function submitSighting() { alert("Report Verified & Submitted!"); hideAll(); }
-    
     function toggleMenu() { 
-        const menu = document.getElementById('side-menu');
-        const overlay = document.getElementById('menu-overlay');
-        menu.classList.toggle('open'); 
-        overlay.classList.toggle('active');
+        document.getElementById('side-menu').classList.toggle('open'); 
+        document.getElementById('menu-overlay').classList.toggle('active');
     }
+
+    function submitSighting() { alert("Reported!"); hideAll(); }
     
     map.on('move', updateUI);
-    setInterval(updateUI, 1000);
-    window.onload = updateUI;
+    window.onload = () => { refreshHeat(); updateUI(); };
 </script>
 </body>
 </html>
