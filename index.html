@@ -15,47 +15,46 @@
         #map { height: 100%; width: 100vw; z-index: 1; }
         .leaflet-top.leaflet-left { left: auto; right: 10px; top: 10px; }
 
+        /* Hamburger & Menu */
         .hamburger { position: absolute; top: 15px; left: 15px; z-index: 4000; background: white; border-radius: 8px; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .hamburger div { width: 22px; height: 3px; background: #2d5a27; border-radius: 2px; }
-
-        .side-menu { position: fixed; top: 0; left: -280px; width: 250px; height: 100%; background: #f8f9fa; z-index: 4001; transition: 0.3s ease; box-shadow: 2px 0 15px rgba(0,0,0,0.3); padding: 20px; }
+        .side-menu { position: fixed; top: 0; left: -280px; width: 250px; height: 100%; background: #f8f9fa; z-index: 4001; transition: 0.3s ease; padding: 20px; }
         .side-menu.open { left: 0; }
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 3999; display: none; }
         .menu-overlay.active { display: block; }
-        .menu-item { padding: 15px; border-bottom: 1px solid #ddd; font-weight: bold; color: #333; cursor: pointer; }
 
+        /* Radar Controls */
+        .radar-panel { 
+            position: absolute; top: 70px; left: 15px; z-index: 3500; 
+            background: white; padding: 10px; border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); width: 200px;
+        }
+        .radar-slider { width: 100%; accent-color: #2d5a27; }
+        .radar-label { font-size: 0.75rem; font-weight: bold; color: #666; display: flex; justify-content: space-between; margin-bottom: 5px; }
+
+        /* Legend */
+        .legend { 
+            position: absolute; bottom: 120px; right: 15px; z-index: 3500; 
+            background: rgba(255,255,255,0.9); padding: 10px; border-radius: 10px; 
+            font-size: 0.7rem; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* UI Panel & Buttons */
         .ui-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; background: white; padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 380px; }
-        .logo { font-weight: bold; color: #2d5a27; font-size: 1.2rem; text-align: center; }
-        .location-header { font-size: 0.85rem; color: #666; text-align: center; margin-bottom: 4px; font-weight: 500; }
-        
-        .activity-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
-        .act-high { background: #fee2e2; color: #b91c1c; }
-        .act-low { background: #e8f5e9; color: #2d5a27; }
-
-        .status-bar { color: #2d5a27; padding: 5px; text-align: center; margin-bottom: 15px; font-weight: bold; font-size: 0.85rem; line-height: 1.4; }
-        .status-bar.danger { color: #b91c1c; }
-
-        .btn-report { background: #2d5a27; color: white; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-        .btn-sub { background: #34495e; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; }
-        .btn-sim { background: #95a5a6; color: white; border: none; padding: 8px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 12px; font-size: 0.7rem; text-transform: uppercase; }
+        .logo { font-weight: bold; color: #2d5a27; font-size: 1.1rem; text-align: center; }
+        .status-bar { color: #2d5a27; text-align: center; margin-bottom: 12px; font-weight: bold; font-size: 0.8rem; line-height: 1.3; }
+        .btn-report { background: #2d5a27; color: white; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: bold; cursor: pointer; }
+        .btn-sim { background: #95a5a6; color: white; border: none; padding: 6px; width: 100%; border-radius: 8px; font-size: 0.65rem; margin-top: 10px; }
         .sim-active { background: #d35400 !important; }
 
+        /* Wizard */
         .step { display: none; }
-        .step.active { display: block; animation: fadeIn 0.2s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .choice-btn { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 12px; background: white; font-weight: bold; cursor: pointer; }
-        
-        /* Identification Help Icon */
-        .help-icon { background: #eee; color: #666; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; font-weight: bold; }
-        .tooltip { display: none; background: #333; color: white; padding: 10px; border-radius: 8px; font-size: 0.75rem; position: absolute; bottom: 110%; left: 0; right: 0; z-index: 5000; text-align: center; font-weight: normal; }
-
-        .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
-        .count-val { font-size: 1.3rem; font-weight: bold; color: #2d5a27; }
-        .count-btn { background: #2d5a27; color: white; border: none; width: 35px; height: 35px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; }
-
-        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: #ff4757; font-size: 40px; font-weight: 200; }
-        .precision-hint { font-size: 0.75rem; color: #e67e22; text-align: center; margin-bottom: 10px; font-weight: bold; }
+        .step.active { display: block; }
+        .choice-btn { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px; margin-bottom: 8px; border: 2px solid #eee; border-radius: 12px; background: white; font-weight: bold; }
+        .help-icon { background: #eee; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; }
+        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: #ff4757; font-size: 40px; }
     </style>
 </head>
 <body>
@@ -64,10 +63,24 @@
 <div class="hamburger" onclick="toggleMenu()"><div></div><div></div><div></div></div>
 
 <div id="side-menu" class="side-menu">
-    <h2 style="color:#2d5a27; margin-bottom:30px;">Menu</h2>
+    <h3 style="color:#2d5a27;">Map Settings</h3>
+    <hr>
+    <label><input type="checkbox" checked onchange="toggleLayer('red')"> Show Red Deer</label><br><br>
+    <label><input type="checkbox" checked onchange="toggleLayer('fallow')"> Show Fallow Deer</label>
+    <hr>
     <div class="menu-item" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
-    <div class="menu-item" onclick="alert('UK Timezone forced for all users.')">🌐 Global Time Sync: ON</div>
     <div class="menu-item" onclick="toggleMenu()" style="margin-top:20px; color:#666;">⬅️ Close</div>
+</div>
+
+<div class="radar-panel">
+    <div class="radar-label"><span>Past 12h Radar</span> <span id="radar-time">LIVE</span></div>
+    <input type="range" min="0" max="12" value="12" class="radar-slider" id="radar-input" oninput="updateRadarView(this.value)">
+    <button onclick="playRadar()" id="play-btn" style="width:100%; margin-top:5px; font-size:0.7rem;">▶ Play Cycle</button>
+</div>
+
+<div class="legend">
+    <div class="legend-item"><div class="dot" style="background:rgba(255,0,0,0.6)"></div> Red Deer</div>
+    <div class="legend-item"><div class="dot" style="background:rgba(0,100,255,0.6)"></div> Fallow Deer</div>
 </div>
 
 <div id="map"></div>
@@ -76,12 +89,9 @@
 <div class="ui-panel">
     <div id="main-ui">
         <div class="logo">🦌 Hello Deer <small style="font-weight: normal; color: #666;">DAPP</small></div>
-        <div id="park-name" class="location-header">Detecting Park...</div>
-        <div style="text-align:center;"><span id="activity-label" class="activity-badge act-low">Activity: Low</span></div>
+        <div id="park-name" style="font-size:0.75rem; text-align:center; color:#666; margin-bottom:5px;">Detecting...</div>
         <div id="timer-display" class="status-bar">Syncing Gates...</div>
-        
-        <button class="btn-report" onclick="startWizard()">+ Report a Sighting</button>
-        
+        <button class="btn-report" onclick="startWizard()">+ Report Sighting</button>
         <div style="display:flex; gap:5px;">
             <button id="sim-richmond" class="btn-sim" style="flex:1" onclick="toggleSimulator('richmond')">📍 Richmond</button>
             <button id="sim-bushy" class="btn-sim" style="flex:1" onclick="toggleSimulator('bushy')">📍 Bushy</button>
@@ -89,138 +99,98 @@
     </div>
 
     <div id="step-1" class="step">
-        <h3 style="text-align:center; margin-top:0;">Which Species?</h3>
-        <div class="precision-hint">Drag map to precisely position crosshairs.</div>
-        
-        <div style="position:relative;">
-            <div id="tip-red" class="tooltip">RED: Large, branched antlers, plain brown coat. No spots.</div>
-            <button class="choice-btn" onclick="nextStep(2, 'Red')">
-                🔴 Red Deer 
-                <span class="help-icon" onclick="event.stopPropagation(); showTip('tip-red')">?</span>
-            </button>
-        </div>
-
-        <div style="position:relative;">
-            <div id="tip-fallow" class="tooltip">FALLOW: Spotted coat (usually), palm-shaped antlers, black/white tail.</div>
-            <button class="choice-btn" onclick="nextStep(2, 'Fallow')">
-                ⚪ Fallow Deer 
-                <span class="help-icon" onclick="event.stopPropagation(); showTip('tip-fallow')">?</span>
-            </button>
-        </div>
-        
-        <button class="btn-sub" onclick="hideAll()" style="background:#666">Cancel</button>
+        <h3 style="text-align:center; margin-top:0;">Species?</h3>
+        <div style="font-size:0.7rem; color:#e67e22; text-align:center; margin-bottom:8px;">Drag map to center crosshair.</div>
+        <button class="choice-btn" onclick="nextStep(2, 'Red')">🔴 Red Deer <span class="help-icon">?</span></button>
+        <button class="choice-btn" onclick="nextStep(2, 'Fallow')">⚪ Fallow Deer <span class="help-icon">?</span></button>
+        <button class="btn-sim" onclick="hideAll()" style="background:#666">Cancel</button>
     </div>
 
     <div id="step-2" class="step">
-        <h3 style="text-align:center; margin-top:0;" id="step-2-title">How many?</h3>
-        <div class="counter-box"><span>♂ <b id="label-male">Males</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('m', -1)">-</button><span id="m-count" class="count-val">0</span><button class="count-btn" onclick="change('m', 1)">+</button></div></div>
-        <div class="counter-box"><span>♀ <b id="label-female">Females</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('f', -1)">-</button><span id="f-count" class="count-val">0</span><button class="count-btn" onclick="change('f', 1)">+</button></div></div>
-        <div class="counter-box"><span>👶 <b id="label-baby">Young</b></span><div style="display:flex; align-items:center; gap:15px;"><button class="count-btn" onclick="change('b', -1)">-</button><span id="b-count" class="count-val">0</span><button class="count-btn" onclick="change('b', 1)">+</button></div></div>
-        <button class="btn-report" style="background:#e67e22; margin-top:10px;" onclick="submitSighting()">Confirm Sighting</button>
-        <button class="btn-sub" onclick="nextStep(1)" style="background:#666">Back</button>
+        <h3 style="text-align:center; margin:0;" id="step-2-title">Numbers?</h3>
+        <div id="counter-container"></div> <button class="btn-report" style="background:#e67e22; margin-top:10px;" onclick="submitSighting()">Confirm</button>
+        <button class="btn-sim" onclick="nextStep(1)" style="background:#666">Back</button>
     </div>
 </div>
 
-<audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3"></audio>
-
 <script>
-    let vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-
     const map = L.map('map').setView([51.442, -0.285], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    
-    let heat = L.heatLayer([], {radius: 25, blur: 15}).addTo(map);
-    function updateHeatmap() {
-        let center = map.getCenter();
-        let points = [];
-        for(let i=0; i<15; i++) {
-            points.push([center.lat + (Math.random()-0.5)*0.01, center.lng + (Math.random()-0.5)*0.01, 0.5]);
+
+    let redHeat = L.heatLayer([], {radius: 20, blur: 15, gradient: {0.4: 'yellow', 0.65: 'orange', 1: 'red'}}).addTo(map);
+    let fallowHeat = L.heatLayer([], {radius: 20, blur: 15, gradient: {0.4: 'cyan', 0.65: 'blue', 1: 'white'}}).addTo(map);
+
+    let mockData = [];
+    function generateMockData() {
+        mockData = [];
+        for(let h=0; h<=12; h++) {
+            for(let i=0; i<5; i++) {
+                mockData.push({
+                    lat: 51.442 + (Math.random()-0.5)*0.02,
+                    lng: -0.285 + (Math.random()-0.5)*0.02,
+                    hour: h,
+                    type: Math.random() > 0.5 ? 'red' : 'fallow'
+                });
+            }
         }
-        heat.setLatLngs(points);
-        const badge = document.getElementById('activity-label');
-        if(Math.random() > 0.5) { badge.innerText = "Activity: High (1h)"; badge.className="activity-badge act-high"; }
-        else { badge.innerText = "Activity: Low"; badge.className="activity-badge act-low"; }
+    }
+    generateMockData();
+
+    function updateRadarView(hourOffset) {
+        document.getElementById('radar-time').innerText = hourOffset == 12 ? "LIVE" : `-${12-hourOffset}h`;
+        let filteredRed = mockData.filter(d => d.type === 'red' && d.hour <= hourOffset).map(d => [d.lat, d.lng, 0.5]);
+        let filteredFallow = mockData.filter(d => d.type === 'fallow' && d.hour <= hourOffset).map(d => [d.lat, d.lng, 0.5]);
+        redHeat.setLatLngs(filteredRed);
+        fallowHeat.setLatLngs(filteredFallow);
     }
 
-    let reportData = { species: '', m: 0, f: 0, b: 0 };
-
-    function getUKTime() {
-        let now = new Date();
-        return new Date(now.toLocaleString("en-US", {timeZone: "Europe/London"}));
+    let isPlaying = false;
+    function playRadar() {
+        if(isPlaying) return;
+        isPlaying = true;
+        let i = 0;
+        let interval = setInterval(() => {
+            document.getElementById('radar-input').value = i;
+            updateRadarView(i);
+            i++;
+            if(i > 12) { clearInterval(interval); isPlaying = false; }
+        }, 200);
     }
 
-    function formatTime(ms) {
-        let s = Math.floor(ms / 1000);
-        let h = Math.floor(s / 3600); s %= 3600;
-        let m = Math.floor(s / 60); s %= 60;
-        return `${h}h:${m.toString().padStart(2, '0')}m:${s.toString().padStart(2, '0')}s`;
-    }
-
+    function getUKTime() { return new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/London"})); }
+    
     function updateGateStatus() {
         const now = getUKTime();
-        const lockTime = new Date(now); lockTime.setHours(20, 0, 0, 0);
-        const openTime = new Date(now); openTime.setHours(7, 30, 0, 0);
+        const lock = new Date(now); lock.setHours(20, 0, 0);
+        const open = new Date(now); open.setHours(7, 30, 0);
         const el = document.getElementById('timer-display');
-        let isClosed = (now >= lockTime || now < openTime);
-        
-        if (isClosed) {
-            let nextOpen = new Date(openTime);
-            if (now >= lockTime) nextOpen.setDate(now.getDate() + 1);
-            el.innerHTML = `GATES: <span style="color:#b91c1c">CLOSED</span><br>Opening in ${formatTime(nextOpen - now)}`;
-        } else {
-            el.innerHTML = `GATES: <span style="color:#2d5a27">OPEN</span><br>Closing in ${formatTime(lockTime - now)}`;
-        }
-        el.className = isClosed ? "status-bar danger" : "status-bar";
+        let isClosed = (now >= lock || now < open);
+        let target = isClosed ? (now >= lock ? new Date(open).setDate(now.getDate()+1) : open) : lock;
+        let diff = target - now;
+        let s = Math.floor(diff/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+        el.innerHTML = `GATES: ${isClosed?'CLOSED':'OPEN'}<br>${isClosed?'Opening':'Closing'} in ${h}h:${m}m`;
     }
-    setInterval(updateGateStatus, 1000);
 
     function updateParkHeader() {
-        const center = map.getCenter();
-        const header = document.getElementById('park-name');
-        if (center.lat > 51.42 && center.lat < 51.46 && center.lng > -0.31 && center.lng < -0.25) header.innerHTML = "📍 Richmond Park";
-        else if (center.lat > 51.40 && center.lat < 51.42 && center.lng > -0.36 && center.lng < -0.31) header.innerHTML = "📍 Bushy Park";
-        else header.innerHTML = "Outside Protected Parks";
-    }
-    map.on('moveend', () => { updateParkHeader(); updateHeatmap(); });
-
-    function toggleSimulator(park) {
-        document.querySelectorAll('.btn-sim').forEach(b => b.classList.remove('sim-active'));
-        if (park === 'richmond') {
-            document.getElementById('sim-richmond').classList.add('sim-active');
-            map.flyTo([51.442, -0.285], 16);
-        } else {
-            document.getElementById('sim-bushy').classList.add('sim-active');
-            map.flyTo([51.413, -0.339], 16);
-        }
+        const c = map.getCenter();
+        document.getElementById('park-name').innerHTML = (c.lat > 51.42 && c.lat < 51.46) ? "📍 Richmond Park" : "📍 Bushy Park";
     }
 
-    function showTip(id) {
-        const tip = document.getElementById(id);
-        tip.style.display = 'block';
-        setTimeout(() => { tip.style.display = 'none'; }, 5000);
-    }
+    map.on('moveend', updateParkHeader);
+    setInterval(updateGateStatus, 1000);
+    window.onload = () => { updateRadarView(12); updateGateStatus(); updateParkHeader(); };
 
-    window.onload = () => { updateParkHeader(); updateGateStatus(); updateHeatmap(); };
+    function toggleLayer(type) {
+        if(type === 'red') (map.hasLayer(redHeat) ? map.removeLayer(redHeat) : redHeat.addTo(map));
+        else (map.hasLayer(fallowHeat) ? map.removeLayer(fallowHeat) : fallowHeat.addTo(map));
+    }
+    
     function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
-    function startWizard() { hideAll(); document.getElementById('step-1').classList.add('active'); document.getElementById('main-ui').style.display = 'none'; document.getElementById('crosshair').style.display = 'block'; }
-    function nextStep(step, speciesChoice) {
-        if (speciesChoice) {
-            reportData.species = speciesChoice;
-            document.getElementById('label-male').innerText = (speciesChoice === 'Red') ? 'Stags' : 'Bucks';
-            document.getElementById('label-female').innerText = (speciesChoice === 'Red') ? 'Hinds' : 'Does';
-            document.getElementById('label-baby').innerText = (speciesChoice === 'Red') ? 'Calves' : 'Fawns';
-        }
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step-' + step).classList.add('active');
-    }
-    function change(type, delta) { reportData[type] = Math.max(0, reportData[type] + delta); document.getElementById(type + '-count').innerText = reportData[type]; }
-    function submitSighting() {
-        document.getElementById('alert-sound').play().catch(()=>{});
-        alert(`Reported ${reportData.m + reportData.f + reportData.b} ${reportData.species} deer.`);
-        hideAll();
-    }
-    function hideAll() { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('main-ui').style.display = 'block'; document.getElementById('crosshair').style.display = 'none'; }
+    function startWizard() { hideAll(); document.getElementById('step-1').classList.add('active'); document.getElementById('main-ui').style.display='none'; document.getElementById('crosshair').style.display='block'; }
+    function hideAll() { document.querySelectorAll('.step').forEach(s=>s.classList.remove('active')); document.getElementById('main-ui').style.display='block'; document.getElementById('crosshair').style.display='none'; }
+    function nextStep(s) { document.querySelectorAll('.step').forEach(st=>st.classList.remove('active')); document.getElementById('step-'+s).classList.add('active'); }
+    function toggleSimulator(p) { map.flyTo(p==='richmond' ? [51.442, -0.285] : [51.413, -0.339], 15); }
+    function submitSighting() { alert("Sighting Reported!"); hideAll(); }
 </script>
 </body>
 </html>
