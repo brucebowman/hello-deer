@@ -1,49 +1,148 @@
-<button id="sim-btn" class="btn-sim" onclick="toggleSimulator()">📍 Mode: Real GPS</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Hello Deer by DAPP</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
-<style>
-    .btn-sim { 
-        background: #95a5a6; color: white; border: none; padding: 8px; 
-        width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px;
-        font-size: 0.7rem; text-transform: uppercase;
-    }
-    .sim-active { background: #d35400 !important; }
-</style>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; background: #222; }
+        #map { height: 100vh; width: 100vw; background: #ddd; }
+        
+        /* The UI Panel */
+        .ui-panel {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 3000; background: white; padding: 15px; border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4); width: 85%; max-width: 380px;
+            max-height: 70vh; overflow-y: auto;
+        }
+
+        .logo { font-weight: bold; color: #2d5a27; font-size: 1.3rem; margin-bottom: 5px; text-align: center; }
+        
+        /* Buttons */
+        .btn-report { background: #2d5a27; color: white; border: none; padding: 14px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .btn-sub { background: #34495e; color: white; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 0.8rem; }
+        .btn-sim { background: #95a5a6; color: white; border: none; padding: 8px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 0.7rem; text-transform: uppercase; }
+        .sim-active { background: #d35400 !important; }
+
+        /* Timer & Alerts */
+        .gate-timer { background: #2d5a27; color: white; padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; }
+        .gate-timer.warning { background: #e67e22; }
+        .gate-timer.danger { background: #c0392b; }
+
+        /* Species Select */
+        .species-toggle { display: flex; gap: 5px; margin-top: 10px; }
+        .spec-btn { flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 8px; background: white; font-weight: bold; font-size: 0.7rem; }
+        .spec-btn.active { border-color: #2d5a27; background: #e8f5e9; }
+
+        #report-form, #id-guide, #video-menu { display: none; }
+        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
+        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: red; font-size: 24px; }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="crosshair" class="crosshair">✛</div>
+
+<div class="ui-panel">
+    <div class="logo">🦌 Hello Deer <small style="font-weight: normal; color: #666;">DAPP</small></div>
+    
+    <div id="timer-display" class="gate-timer">Checking Gate Times...</div>
+
+    <div id="main-ui">
+        <button class="btn-report" onclick="startReporting()">+ Report Sighting</button>
+        <button class="btn-sub" onclick="toggleMenu('video-menu')">📖 Discovery & Safety</button>
+        <button class="btn-sub" onclick="toggleMenu('id-guide')">🔍 Deer ID Guide</button>
+        <button id="sim-btn" class="btn-sim" onclick="toggleSimulator()">📍 Mode: Real GPS</button>
+    </div>
+
+    <div id="video-menu">
+        <h4>Safety Resources</h4>
+        <p style="font-size: 0.8rem;">Stay 50m away from all deer.</p>
+        <button class="btn-sub" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">▶️ Safety Film</button>
+        <button class="btn-sub" onclick="hideAll()">Close</button>
+    </div>
+
+    <div id="id-guide">
+        <h4>Deer ID</h4>
+        <p><b>Red:</b> Large, branched antlers.</p>
+        <p><b>Fallow:</b> Palmate antlers, white spots.</p>
+        <button class="btn-sub" onclick="hideAll()">Close</button>
+    </div>
+
+    <div id="report-form">
+        <div class="species-toggle">
+            <button class="spec-btn active" id="btn-red" onclick="setSpecies('Red')">Red</button>
+            <button class="spec-btn" id="btn-fallow" onclick="setSpecies('Fallow')">Fallow</button>
+        </div>
+        <div class="counter-row"><span>Stags/Bucks</span><button onclick="change('m', 1)">+ <span id="m-count">0</span></button></div>
+        <div class="counter-row"><span>Hinds/Does</span><button onclick="change('f', 1)">+ <span id="f-count">0</span></button></div>
+        <button class="btn-report" style="background:#e67e22" onclick="submitSighting()">Confirm Sighting</button>
+        <button class="btn-sub" onclick="hideAll()" style="background:#666">Cancel</button>
+    </div>
+</div>
+
+<audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3"></audio>
 
 <script>
+    // Initialize Map
+    const map = L.map('map').setView([51.442, -0.285], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
+    let heat = L.heatLayer([[51.442, -0.285, 0.5]], {radius: 35, blur: 20}).addTo(map);
+
+    // Simulator State
     let isSimulating = false;
-    const RICHMOND_CENTER = [51.442, -0.285]; // Near Pen Ponds
+    let selectedSpecies = 'Red';
+    let counts = { m: 0, f: 0 };
 
     function toggleSimulator() {
         isSimulating = !isSimulating;
         const btn = document.getElementById('sim-btn');
-        
         if (isSimulating) {
             btn.classList.add('sim-active');
             btn.innerText = "📍 Mode: Simulated (Pen Ponds)";
-            // Move map to the park instantly
-            map.flyTo(RICHMOND_CENTER, 15);
-            console.log("DAPP Simulator: Position set to Richmond Park.");
+            map.flyTo([51.442, -0.285], 16);
         } else {
             btn.classList.remove('sim-active');
             btn.innerText = "📍 Mode: Real GPS";
-            // In a real app, this would trigger navigator.geolocation.getCurrentPosition
-            alert("Switching back to your actual GPS location.");
         }
     }
 
-    // Modify your reporting logic to use the simulated center
-    function submitSighting() {
-        const reportLocation = isSimulating ? RICHMOND_CENTER : [map.getCenter().lat, map.getCenter().lng];
-        
-        // This ensures your "Precise" data for Rangers is always in the park during testing
-        console.log(`PROTOTYPE LOG: Sighting reported at ${reportLocation}`);
-        
-        // Audio & Haptic feedback
-        const audio = document.getElementById('alert-sound');
-        if(audio) audio.play().catch(() => {});
-        if ("vibrate" in navigator) navigator.vibrate(200);
+    function updateTimer() {
+        const now = new Date();
+        const lock = new Date(); lock.setHours(20, 0, 0);
+        const diff = lock - now;
+        const mins = Math.floor(diff / 60000);
+        const el = document.getElementById('timer-display');
+        if (mins < 0) { el.innerHTML = "🚫 PARK CLOSED"; el.className = "gate-timer danger"; }
+        else if (mins < 30) { el.innerHTML = `⚠️ EXIT NOW: ${mins}m left`; el.className = "gate-timer danger"; }
+        else { el.innerHTML = `Gates lock in ${mins} mins`; el.className = "gate-timer"; }
+    }
+    setInterval(updateTimer, 60000); updateTimer();
 
-        alert("Sighting Recorded! (Using " + (isSimulating ? "Simulated" : "Real") + " Location)");
-        cancelReporting();
+    function startReporting() { hideAll(); document.getElementById('report-form').style.display='block'; document.getElementById('crosshair').style.display='block'; map.zoomIn(2); }
+    function setSpecies(s) { selectedSpecies = s; document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-'+s.toLowerCase()).classList.add('active'); }
+    function change(t, d) { counts[t] += d; document.getElementById(t+'-count').innerText = counts[t]; }
+    
+    function submitSighting() {
+        document.getElementById('alert-sound').play().catch(()=>{});
+        alert(`Reported ${counts.m + counts.f} ${selectedSpecies} deer. Stay 50m away!`);
+        hideAll();
+        counts = {m:0, f:0}; document.getElementById('m-count').innerText=0; document.getElementById('f-count').innerText=0;
+    }
+
+    function toggleMenu(id) { hideAll(); document.getElementById(id).style.display = 'block'; }
+    function hideAll() { 
+        ['main-ui', 'video-menu', 'id-guide', 'report-form'].forEach(id => document.getElementById(id).style.display = 'none');
+        document.getElementById('main-ui').style.display = 'block';
+        document.getElementById('crosshair').style.display = 'none';
     }
 </script>
+</body>
+</html>
