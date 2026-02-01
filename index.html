@@ -14,32 +14,31 @@
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; background: #222; height: 100vh; height: calc(var(--vh) * 100); }
         #map { height: 100%; width: 100vw; z-index: 1; }
 
-        /* UI Overlays */
+        /* Side Menu & ID Guide */
         .hamburger { position: absolute; top: 15px; left: 15px; z-index: 4000; background: white; border-radius: 8px; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .hamburger div { width: 22px; height: 3px; background: #2d5a27; border-radius: 2px; }
-        .side-menu { position: fixed; top: 0; left: -280px; width: 250px; height: 100%; background: #f8f9fa; z-index: 4001; transition: 0.3s ease; padding: 20px; box-shadow: 2px 0 15px rgba(0,0,0,0.3); }
+        .side-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #f8f9fa; z-index: 4001; transition: 0.3s ease; padding: 20px; box-shadow: 2px 0 15px rgba(0,0,0,0.3); overflow-y: auto; }
         .side-menu.open { left: 0; }
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 3999; display: none; }
         .menu-overlay.active { display: block; }
 
+        .id-card { background: white; border-radius: 10px; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; text-align: center; }
+        .id-card img { width: 100%; border-radius: 6px; margin-bottom: 8px; }
+        .id-card h4 { margin: 5px 0; color: #2d5a27; }
+        .id-card p { font-size: 0.75rem; color: #666; margin: 0; line-height: 1.2; }
+
+        /* Radar & UI */
         .radar-panel { position: absolute; top: 70px; left: 15px; z-index: 3500; background: white; padding: 10px; border-radius: 12px; width: 200px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .radar-slider { width: 100%; accent-color: #2d5a27; }
-        .legend { position: absolute; bottom: 120px; right: 15px; z-index: 3500; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 8px; font-size: 0.7rem; font-weight: bold; }
-
         .ui-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; background: white; padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 380px; text-align: center; }
-        .status-bar { color: #2d5a27; font-weight: bold; font-size: 0.8rem; margin: 10px 0; line-height: 1.3; }
-        .status-bar.danger { color: #b91c1c; }
-
+        
         .btn-report { background: #2d5a27; color: white; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
         .btn-sim { background: #95a5a6; color: white; border: none; padding: 8px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; margin-top: 10px; flex: 1; }
-        .sim-active { background: #d35400 !important; }
 
-        /* Wizard & Counters */
+        /* Steps & Fixed Counters */
         .step { display: none; }
         .step.active { display: block; }
-        .choice-btn { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px; margin-bottom: 8px; border: 2px solid #eee; border-radius: 12px; background: white; font-weight: bold; cursor: pointer; }
-        .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 10px; border-radius: 12px; margin-bottom: 8px; }
-        .count-btn { background: #2d5a27; color: white; border: none; width: 30px; height: 30px; border-radius: 8px; font-weight: bold; }
+        .counter-box { display: flex; justify-content: space-between; align-items: center; background: #f1f3f5; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
+        .count-btn { background: #2d5a27; color: white; border: none; width: 40px; height: 40px; border-radius: 10px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
         
         .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; pointer-events: none; display: none; color: #ff4757; font-size: 40px; }
     </style>
@@ -50,12 +49,23 @@
 <div class="hamburger" onclick="toggleMenu()"><div></div><div></div><div></div></div>
 
 <div id="side-menu" class="side-menu">
-    <h3 style="color:#2d5a27;">Map Filters</h3>
-    <label><input type="checkbox" checked onchange="toggleLayer('red')"> Red Deer (Red)</label><br><br>
-    <label><input type="checkbox" checked onchange="toggleLayer('fallow')"> Fallow Deer (Blue)</label>
+    <h3 style="color:#2d5a27; margin-top:0;">Identification Guide</h3>
+    
+    <div class="id-card">
+        <img src="https://images.unsplash.com/photo-1543946207-39bd91e70ca7?auto=format&fit=crop&w=300&q=80" alt="Red Deer">
+        <h4>Red Deer</h4>
+        <p><b>Stag:</b> Branched antlers. <br><b>Hind:</b> Large, reddish-brown coat. No spots.</p>
+    </div>
+
+    <div class="id-card">
+        <img src="https://images.unsplash.com/photo-1484406566174-9da000fda645?auto=format&fit=crop&w=300&q=80" alt="Fallow Deer">
+        <h4>Fallow Deer</h4>
+        <p><b>Buck:</b> Broad, palm antlers. <br><b>Doe:</b> White spots, black 'M' on tail/rump.</p>
+    </div>
+
     <hr>
-    <div onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')" style="cursor:pointer; padding:10px 0;">🎞️ Safety Film</div>
-    <div onclick="toggleMenu()" style="margin-top:20px; color:#666; cursor:pointer;">⬅️ Close</div>
+    <div onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')" style="cursor:pointer; padding:10px 0; font-weight:bold;">🎞️ Safety Film</div>
+    <div onclick="toggleMenu()" style="margin-top:20px; color:#666; cursor:pointer;">⬅️ Close Menu</div>
 </div>
 
 <div class="radar-panel">
@@ -66,11 +76,6 @@
     <button onclick="playRadar()" style="width:100%; margin-top:5px; font-size:0.6rem; cursor:pointer;">▶ Play Animation</button>
 </div>
 
-<div class="legend">
-    <div style="display:flex; align-items:center; gap:5px;"><div style="width:8px; height:8px; background:red; border-radius:50%;"></div> Red</div>
-    <div style="display:flex; align-items:center; gap:5px;"><div style="width:8px; height:8px; background:blue; border-radius:50%;"></div> Fallow</div>
-</div>
-
 <div id="map"></div>
 <div id="crosshair" class="crosshair">✛</div>
 
@@ -78,7 +83,7 @@
     <div id="main-ui">
         <div style="font-weight:bold; color:#2d5a27;">🦌 Hello Deer</div>
         <div id="park-name" style="font-size:0.7rem; color:#666;">Detecting Park...</div>
-        <div id="timer-display" class="status-bar">Syncing Gates...</div>
+        <div id="timer-display" style="font-weight:bold; font-size:0.8rem; margin:10px 0;">Syncing Gates...</div>
         <button class="btn-report" onclick="startWizard()">+ Report Sighting</button>
         <div style="display:flex; gap:5px;">
             <button id="sim-richmond" class="btn-sim" onclick="toggleSimulator('richmond')">📍 Richmond</button>
@@ -88,8 +93,8 @@
 
     <div id="step-1" class="step">
         <h4 style="margin:0 0 10px 0;">Which Species?</h4>
-        <button class="choice-btn" onclick="nextStep(2, 'Red')">🔴 Red Deer</button>
-        <button class="choice-btn" onclick="nextStep(2, 'Fallow')">⚪ Fallow Deer</button>
+        <button class="btn-report" style="margin-bottom:10px; background:#c0392b;" onclick="nextStep(2, 'Red')">🔴 Red Deer</button>
+        <button class="btn-report" style="background:#2980b9;" onclick="nextStep(2, 'Fallow')">⚪ Fallow Deer</button>
         <button class="btn-sim" onclick="hideAll()" style="background:#666">Cancel</button>
     </div>
 
@@ -109,47 +114,31 @@
     let fallowHeat = L.heatLayer([], {radius: 20, blur: 15, gradient: {0.5: 'cyan', 1: 'blue'}}).addTo(map);
 
     let mockData = [];
-    function seedData() {
-        for(let h=0; h<=12; h++) {
-            for(let i=0; i<8; i++) {
-                mockData.push({lat: 51.442+(Math.random()-0.5)*0.03, lng: -0.285+(Math.random()-0.5)*0.03, h: h, t: Math.random()>0.5?'red':'fallow'});
-            }
+    for(let h=0; h<=12; h++) {
+        for(let i=0; i<8; i++) {
+            mockData.push({lat: 51.442+(Math.random()-0.5)*0.03, lng: -0.285+(Math.random()-0.5)*0.03, h: h, t: Math.random()>0.5?'red':'fallow'});
         }
     }
-    seedData();
 
     function updateRadarView(val) {
         document.getElementById('radar-time').innerText = val == 12 ? "LIVE" : `-${12-val}h`;
-        // Radar "Window" logic: show points within 2 hours of selected time
         const r = mockData.filter(d => d.t==='red' && d.h <= val && d.h > val-2).map(d => [d.lat, d.lng, 0.6]);
         const f = mockData.filter(d => d.t==='fallow' && d.h <= val && d.h > val-2).map(d => [d.lat, d.lng, 0.6]);
         redHeat.setLatLngs(r); fallowHeat.setLatLngs(f);
     }
 
-    function getUKTime() { return new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/London"})); }
-
     function updateUI() {
-        const now = getUKTime();
-        const center = map.getCenter();
-        const isBushy = center.lng < -0.31;
-        
-        // Feb 2026 Cull Hours
-        const closeH = isBushy ? 22 : 20; 
-        const closeM = isBushy ? 30 : 0;
-        const openH = isBushy ? 8 : 7;
-        const openM = isBushy ? 0 : 30;
-
-        document.getElementById('park-name').innerText = isBushy ? "📍 Bushy Park (February Hours)" : "📍 Richmond Park (February Hours)";
-
-        let lock = new Date(now); lock.setHours(closeH, closeM, 0);
-        let open = new Date(now); open.setHours(openH, openM, 0);
+        const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/London"}));
+        const isBushy = map.getCenter().lng < -0.31;
+        const closeH = isBushy ? 22 : 20, openH = isBushy ? 8 : 7;
+        let lock = new Date(now); lock.setHours(closeH, isBushy?30:0, 0);
+        let open = new Date(now); open.setHours(openH, isBushy?0:30, 0);
         let isClosed = (now >= lock || now < open);
         let target = isClosed ? (now >= lock ? new Date(open).setDate(now.getDate()+1) : open) : lock;
-        
         let diff = target - now;
         let h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000);
         document.getElementById('timer-display').innerHTML = `GATES: ${isClosed?'CLOSED':'OPEN'}<br>${isClosed?'Opening':'Closing'} in ${h}h ${m}m`;
-        document.getElementById('timer-display').className = isClosed ? "status-bar danger" : "status-bar";
+        document.getElementById('park-name').innerText = isBushy ? "📍 Bushy Park" : "📍 Richmond Park";
     }
 
     let reportData = { m: 0, f: 0, y: 0, species: '' };
@@ -161,40 +150,32 @@
 
     function nextStep(s, species) {
         if(species) {
-            reportData.species = species;
+            reportData = { m: 0, f: 0, y: 0, species: species };
             const labels = species === 'Red' ? ['Stags', 'Hinds', 'Calves'] : ['Bucks', 'Does', 'Fawns'];
-            document.getElementById('counters').innerHTML = `
-                ${['m','f','y'].map((type, i) => `
-                    <div class="counter-box">
-                        <span>${labels[i]}</span>
-                        <div>
-                            <button class="count-btn" onclick="adj('${type}',-1)">-</button>
-                            <span id="c-${type}" style="margin:0 10px; font-weight:bold;">0</span>
-                            <button class="count-btn" onclick="adj('${type}',1)">+</button>
-                        </div>
+            const keys = ['m', 'f', 'y'];
+            document.getElementById('counters').innerHTML = labels.map((label, i) => `
+                <div class="counter-box">
+                    <span style="font-weight:bold;">${label}</span>
+                    <div style="display:flex; align-items:center;">
+                        <button class="count-btn" onclick="adj(event, '${keys[i]}', -1)">-</button>
+                        <span id="c-${keys[i]}" style="width:30px; text-align:center; font-weight:bold; font-size:1.2rem;">0</span>
+                        <button class="count-btn" onclick="adj(event, '${keys[i]}', 1)">+</button>
                     </div>
-                `).join('')}
-            `;
+                </div>
+            `).join('');
         }
         document.querySelectorAll('.step').forEach(div => div.classList.remove('active'));
         document.getElementById('step-'+s).classList.add('active');
     }
 
-    function adj(t, d) { reportData[t] = Math.max(0, reportData[t]+d); document.getElementById('c-'+t).innerText = reportData[t]; }
-    
-    function playRadar() {
-        let i = 0;
-        let inv = setInterval(() => {
-            document.getElementById('radar-input').value = i;
-            updateRadarView(i);
-            if(++i > 12) clearInterval(inv);
-        }, 150);
+    function adj(e, t, d) { 
+        e.stopPropagation(); e.preventDefault();
+        reportData[t] = Math.max(0, reportData[t] + d); 
+        document.getElementById('c-'+t).innerText = reportData[t]; 
     }
 
     function toggleSimulator(p) {
         map.flyTo(p==='richmond' ? [51.442, -0.285] : [51.413, -0.339], 15);
-        document.querySelectorAll('.btn-sim').forEach(b => b.classList.remove('sim-active'));
-        document.getElementById('sim-'+p).classList.add('sim-active');
     }
 
     function hideAll() {
@@ -203,7 +184,7 @@
         document.getElementById('crosshair').style.display='none';
     }
 
-    function submitSighting() { alert(`Reported ${reportData.m+reportData.f+reportData.y} ${reportData.species} deer!`); hideAll(); }
+    function submitSighting() { alert(`Success! ${reportData.m+reportData.f+reportData.y} ${reportData.species} reported.`); hideAll(); }
     function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
     
     map.on('move', updateUI);
