@@ -1,35 +1,49 @@
-<button id="trend-btn" class="btn-trend" onclick="toggleTrends()">📈 View Feb Trends</button>
+<button id="sim-btn" class="btn-sim" onclick="toggleSimulator()">📍 Mode: Real GPS</button>
 
 <style>
-    .btn-trend { background: #5d4037; color: white; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; }
-    .trend-active { background: #8d6e63 !important; border: 2px solid #fff; }
+    .btn-sim { 
+        background: #95a5a6; color: white; border: none; padding: 8px; 
+        width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px;
+        font-size: 0.7rem; text-transform: uppercase;
+    }
+    .sim-active { background: #d35400 !important; }
 </style>
 
 <script>
-    let trendsActive = false;
-    
-    // Historical February Data Points (Typical spots near Pen Ponds and Sidmouth Woods)
-    const febTrendData = [
-        [51.446, -0.288, 0.9], [51.441, -0.280, 0.7], [51.438, -0.285, 0.8],
-        [51.432, -0.290, 0.6], [51.448, -0.292, 0.5]
-    ];
+    let isSimulating = false;
+    const RICHMOND_CENTER = [51.442, -0.285]; // Near Pen Ponds
 
-    function toggleTrends() {
-        trendsActive = !trendsActive;
-        const btn = document.getElementById('trend-btn');
+    function toggleSimulator() {
+        isSimulating = !isSimulating;
+        const btn = document.getElementById('sim-btn');
         
-        if (trendsActive) {
-            btn.classList.add('trend-active');
-            btn.innerText = "Showing: Feb Trends (16:00)";
-            // Swap live heat for trend heat
-            heat.setOptions({ gradient: {0.4: 'blue', 0.6: 'cyan', 1: 'lime'} }); 
-            heat.setLatLngs(febTrendData);
+        if (isSimulating) {
+            btn.classList.add('sim-active');
+            btn.innerText = "📍 Mode: Simulated (Pen Ponds)";
+            // Move map to the park instantly
+            map.flyTo(RICHMOND_CENTER, 15);
+            console.log("DAPP Simulator: Position set to Richmond Park.");
         } else {
-            btn.classList.remove('trend-active');
-            btn.innerText = "📈 View Feb Trends";
-            // Back to live "Red" heatmap
-            heat.setOptions({ gradient: {0.4: 'yellow', 0.6: 'orange', 1: 'red'} });
-            heat.setLatLngs(liveSightings); // This would be your live array
+            btn.classList.remove('sim-active');
+            btn.innerText = "📍 Mode: Real GPS";
+            // In a real app, this would trigger navigator.geolocation.getCurrentPosition
+            alert("Switching back to your actual GPS location.");
         }
+    }
+
+    // Modify your reporting logic to use the simulated center
+    function submitSighting() {
+        const reportLocation = isSimulating ? RICHMOND_CENTER : [map.getCenter().lat, map.getCenter().lng];
+        
+        // This ensures your "Precise" data for Rangers is always in the park during testing
+        console.log(`PROTOTYPE LOG: Sighting reported at ${reportLocation}`);
+        
+        // Audio & Haptic feedback
+        const audio = document.getElementById('alert-sound');
+        if(audio) audio.play().catch(() => {});
+        if ("vibrate" in navigator) navigator.vibrate(200);
+
+        alert("Sighting Recorded! (Using " + (isSimulating ? "Simulated" : "Real") + " Location)");
+        cancelReporting();
     }
 </script>
