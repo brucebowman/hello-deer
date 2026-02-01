@@ -8,22 +8,17 @@
     <style>
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
         #map { height: 100vh; width: 100vw; }
+        .ui-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 3000; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
         
-        .ui-panel {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 3000; background: white; padding: 15px; border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 90%; max-width: 400px;
-        }
+        /* Species Toggle Buttons */
+        .species-toggle { display: flex; gap: 5px; margin-bottom: 15px; }
+        .spec-btn { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .spec-btn.active { border-color: #2d5a27; background: #e8f5e9; color: #2d5a27; }
 
-        /* Video Menu Styles */
-        #video-menu { display: none; padding: 10px; }
-        .video-link { 
-            display: block; background: #f0f0f0; padding: 10px; margin-bottom: 8px; 
-            border-radius: 10px; text-decoration: none; color: #333; font-size: 0.9rem;
-        }
-
+        .id-card { background: #f9f9f9; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 0.8rem; border-left: 4px solid #2d5a27; }
         .btn-report { background: #2d5a27; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn-secondary { background: #34495e; color: white; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        #report-form, #id-guide { display: none; }
+        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
     </style>
 </head>
 <body>
@@ -32,52 +27,63 @@
 
 <div class="ui-panel">
     <div id="main-ui">
-        <button class="btn-report" onclick="startReporting()">+ Report Sighting</button>
-        <button class="btn-secondary" onclick="toggleMenu()">📖 Discovery & Safety</button>
+        <button class="btn-report" onclick="showReporting()">+ Report Sighting</button>
+        <button onclick="showID()" style="width:100%; border:none; background:none; color:#2d5a27; font-weight:bold; margin-top:10px; cursor:pointer;">📖 Deer ID Guide</button>
     </div>
 
-    <div id="video-menu">
-        <h4 style="margin-top:0">Deer Discovery</h4>
-        <a href="https://www.youtube.com/watch?v=acwRCNxqWbA" target="_blank" class="video-link">🦌 Official: Deer Safety Film</a>
-        <a href="https://www.youtube.com/watch?v=AAP_tqiYB8c" target="_blank" class="video-link">🌿 Wildlife of Richmond Park</a>
-        <a href="https://www.youtube.com/watch?v=Vk4XfviEQLM" target="_blank" class="video-link">📸 How to Photograph Deer Safely</a>
-        <button onclick="toggleMenu()" style="width:100%; border:none; background:none; color:#666; cursor:pointer;">Back to Map</button>
+    <div id="id-guide">
+        <h4 style="margin:0 0 10px 0;">Richmond Park ID Guide</h4>
+        <div class="id-card">
+            <b>🔴 Red Deer:</b> Huge, branched antlers (stags), plain reddish/brown coat. No spots.
+        </div>
+        
+        <div class="id-card">
+            <b>⚪ Fallow Deer:</b> Hand-shaped antlers (bucks), white spots, black/white "target" rump.
+        </div>
+        
+        <button onclick="hideID()" class="btn-report" style="background:#666">Close Guide</button>
     </div>
 
-    <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3"></audio>
+    <div id="report-form">
+        <h4 style="margin:0 0 10px 0;">Select Species</h4>
+        <div class="species-toggle">
+            <button class="spec-btn active" id="btn-red" onclick="setSpecies('Red')">Red Deer</button>
+            <button class="spec-btn" id="btn-fallow" onclick="setSpecies('Fallow')">Fallow</button>
+            <button class="spec-btn" id="btn-unsure" onclick="setSpecies('Unsure')">Not Sure</button>
+        </div>
 
-    <div id="report-form" style="display:none;">
-        <button class="btn-report" onclick="submitSighting()">Confirm & Report</button>
+        <div class="counter-row"><span>Males (Stags/Bucks)</span><button onclick="change('m', 1)">+ <span id="m-count">0</span></button></div>
+        <div class="counter-row"><span>Females (Hinds/Does)</span><button onclick="change('f', 1)">+ <span id="f-count">0</span></button></div>
+        
+        <button class="btn-report" onclick="submitSighting()" style="background: #e67e22; margin-top:10px;">Submit Species Report</button>
+        <button onclick="hideReporting()" style="width:100%; background:none; border:none; color:#666; margin-top:8px; cursor:pointer;">Cancel</button>
     </div>
 </div>
 
 <script>
-    // ... (Previous Map & Crosshair Logic) ...
+    let selectedSpecies = 'Red';
+    let counts = { m: 0, f: 0 };
 
-    function toggleMenu() {
-        const menu = document.getElementById('video-menu');
-        const main = document.getElementById('main-ui');
-        if (menu.style.display === 'none' || menu.style.display === '') {
-            menu.style.display = 'block';
-            main.style.display = 'none';
-        } else {
-            menu.style.display = 'none';
-            main.style.display = 'block';
-        }
+    function setSpecies(type) {
+        selectedSpecies = type;
+        document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + type.toLowerCase().replace(' ', '')).classList.add('active');
+    }
+
+    function showReporting() { document.getElementById('main-ui').style.display='none'; document.getElementById('report-form').style.display='block'; }
+    function hideReporting() { document.getElementById('main-ui').style.display='block'; document.getElementById('report-form').style.display='none'; }
+    function showID() { document.getElementById('main-ui').style.display='none'; document.getElementById('id-guide').style.display='block'; }
+    function hideID() { document.getElementById('main-ui').style.display='block'; document.getElementById('id-guide').style.display='none'; }
+
+    function change(type, delta) {
+        counts[type] += delta;
+        document.getElementById(type + '-count').innerText = counts[type];
     }
 
     function submitSighting() {
-        // Play Sound
-        const audio = document.getElementById('alert-sound');
-        audio.play().catch(e => console.log("Audio requires user interaction first"));
-
-        // Haptic Feedback (Vibration)
-        if ("vibrate" in navigator) {
-            navigator.vibrate([100, 50, 100]); // Vibrates: tap-gap-tap
-        }
-
-        alert("Sighting Submitted! Hear the call? Check the heatmap.");
-        // ... (Reset UI logic) ...
+        alert(`Success! Reported ${counts.m + counts.f} ${selectedSpecies} deer. Total count sent to Rangers.`);
+        hideReporting();
+        counts = { m: 0, f: 0 };
     }
 </script>
 </body>
