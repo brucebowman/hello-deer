@@ -1,134 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Deer by DAPP</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; }
-        #map { height: 100vh; width: 100vw; }
-        
-        /* UI Overlay */
-        .ui-panel {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: white;
-            padding: 15px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .logo { font-weight: bold; color: #2d5a27; font-size: 1.2rem; }
-        .alert-bar { background: #fff3cd; font-size: 0.8rem; padding: 5px 10px; border-radius: 5px; margin-bottom: 10px; }
-
-        .btn-report {
-            background: #2d5a27; color: white; border: none; padding: 12px;
-            width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer;
-        }
-
-        /* Reporting Modal */
-        #report-form { display: none; }
-        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; }
-        .counter-controls button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ccc; background: white; }
-    </style>
-</head>
-<body>
-
-<div id="map"></div>
-
-<div class="ui-panel">
-    <div class="header">
-        <div class="logo">🦌 Hello Deer <small style="font-weight: normal; color: #666;">by DAPP</small></div>
-        <div style="font-size: 0.8rem; color: #666;">Richmond Park</div>
-    </div>
-
-    <div class="alert-bar">
-        ⚠️ <strong>Notice:</strong> Winter Cull active. Pedestrian gates lock 22:30 (Sun-Thu). Stay 50m away!
-    </div>
-
-    <div id="main-ui">
-        <button class="btn-report" onclick="showReporting()">+ Report Sighting</button>
-    </div>
-
-    <div id="report-form">
-        <h4 style="margin-top:0">What did you see?</h4>
-        <div class="counter-row">
-            <span>Stags (Male)</span>
-            <div class="counter-controls">
-                <button onclick="change('m', -1)">-</button> <span id="m-count">0</span> <button onclick="change('m', 1)">+</button>
-            </div>
-        </div>
-        <div class="counter-row">
-            <span>Hinds (Female)</span>
-            <div class="counter-controls">
-                <button onclick="change('f', -1)">-</button> <span id="f-count">0</span> <button onclick="change('f', 1)">+</button>
-            </div>
-        </div>
-        <div class="counter-row">
-            <span>Calves (Babies)</span>
-            <div class="counter-controls">
-                <button onclick="change('b', -1)">-</button> <span id="b-count">0</span> <button onclick="change('b', 1)">+</button>
-            </div>
-        </div>
-        <button class="btn-report" onclick="submitSighting()" style="background: #e67e22;">Submit Sighting</button>
-        <button onclick="hideReporting()" style="width:100%; background:none; border:none; color:#666; margin-top:5px; cursor:pointer;">Cancel</button>
-    </div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
-
 <script>
-    // Initialize Map centered on Richmond Park
     const map = L.map('map').setView([51.442, -0.285], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // FUZZY HEATMAP: Increased radius and blur to obscure exact locations
+    // Data format: [Lat, Lng, Intensity]
+    const heat = L.heatLayer([
+        [51.446, -0.288, 0.5], [51.435, -0.282, 0.5], [51.442, -0.275, 0.4]
+    ], {
+        radius: 40,  // Makes the "glow" larger
+        blur: 25,    // Softens the edges so you can't see the center point
+        maxZoom: 15  // Disappears if you zoom in too close (prevents sniping)
     }).addTo(map);
 
-    // Fake Data: Existing "Hotspots" (Lat, Lng, Intensity)
-    const hotSpots = [
-        [51.446, -0.288, 0.8], // Near Pen Ponds
-        [51.445, -0.289, 0.7],
-        [51.435, -0.282, 0.6], // Near Isabella Plantation
-        [51.436, -0.281, 0.9],
-        [51.451, -0.295, 0.5]  // Near Richmond Gate
-    ];
-    const heat = L.heatLayer(hotSpots, {radius: 25, blur: 15, maxZoom: 17}).addTo(map);
-
-    // Reporting Logic
     let counts = { m: 0, f: 0, b: 0 };
     
-    function showReporting() {
-        document.getElementById('main-ui').style.display = 'none';
-        document.getElementById('report-form').style.display = 'block';
-    }
-
-    function hideReporting() {
-        document.getElementById('main-ui').style.display = 'block';
-        document.getElementById('report-form').style.display = 'none';
-    }
-
-    function change(type, delta) {
-        counts[type] = Math.max(0, counts[type] + delta);
-        document.getElementById(type + '-count').innerText = counts[type];
-    }
-
     function submitSighting() {
-        alert(`Success! Reported ${counts.m + counts.f + counts.b} deer near your location. Remember to stay 50m away!`);
+        // In a real app, we'd call the what3words API here.
+        // For the prototype, we simulate the 'Ranger-only' precise data:
+        const total = counts.m + counts.f + counts.b;
+        
+        // This simulates what the database (and the Rangers) would see
+        console.log("RANGER LOG: Sighting at ///filled.count.soap - Count: " + total);
+
+        alert(`Success! Your sighting is now part of the general heatmap.\n\nThank you for keeping Richmond Park safe!`);
+        
         hideReporting();
-        // Reset counts
         counts = { m: 0, f: 0, b: 0 };
-        document.getElementById('m-count').innerText = 0;
-        document.getElementById('f-count').innerText = 0;
-        document.getElementById('b-count').innerText = 0;
+        document.querySelectorAll('[id$="-count"]').forEach(el => el.innerText = 0);
     }
+
+    // February 2026 Fact Rotation
+    const facts = [
+        "Feb 2026: Male deer are currently shedding antlers. If you see one with missing antlers, it's natural!",
+        "Safety Tip: 50 meters is roughly the length of 4 double-decker buses.",
+        "Cull Notice: Pedestrian gates lock at 20:00 tonight. Don't get locked in!"
+    ];
+    document.getElementById('fact-of-the-day').innerHTML = `<b>Pro Tip:</b> ${facts[Math.floor(Math.random() * facts.length)]}`;
 </script>
-</body>
-</html>
