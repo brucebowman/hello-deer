@@ -13,12 +13,12 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; overflow: hidden; background: #222; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* UI Hierarchy */
+        /* Persistent UI Elements */
         .leaflet-top.leaflet-right { top: 10px !important; right: 10px !important; }
         .hamburger { position: absolute; top: 15px; left: 15px; z-index: 9999; background: white; border-radius: 8px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .hamburger div { width: 24px; height: 3px; background: #2d5a27; border-radius: 2px; }
 
-        /* Time Panel */
+        /* Time Control (Loops from Now-Duration to Now) */
         .time-panel {
             position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
             z-index: 9000; background: rgba(255,255,255,0.95); padding: 12px;
@@ -26,39 +26,52 @@
         }
         .time-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         #time-slider { flex: 1; accent-color: #2d5a27; }
-        .duration-picker { display: flex; justify-content: space-between; gap: 2px; }
-        .dur-btn { background: #eee; border: none; padding: 5px 2px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; cursor: pointer; flex: 1; }
+        .dur-btn { background: #eee; border: none; padding: 5px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
         .dur-btn.active { background: #2d5a27; color: white; }
 
-        /* Species Filter Widget (The Missing Piece) */
-        .filter-widget { position: absolute; bottom: 130px; right: 15px; z-index: 9001; }
-        .filter-btn { background: white; width: 52px; height: 52px; border-radius: 26px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; font-size: 1.3rem; border: none; }
-        .filter-options { position: absolute; bottom: 65px; right: 0; background: white; padding: 15px; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: none; width: 190px; }
+        /* Species Filters */
+        .filter-widget { position: absolute; bottom: 150px; right: 15px; z-index: 9001; }
+        .filter-btn { background: white; width: 50px; height: 50px; border-radius: 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; border: none; font-size: 1.2rem; }
+        .filter-options { position: absolute; bottom: 60px; right: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: none; width: 180px; }
         .filter-options.show { display: block; }
-        .filter-group-label { font-size: 0.65rem; color: #999; margin: 8px 0 4px 0; letter-spacing: 0.5px; }
-        .filter-opt { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+        .filter-opt { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.8rem; font-weight: bold; }
 
-        /* Bottom UI */
-        .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 22px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 88%; max-width: 400px; text-align: center; }
-        .btn-report { background: #2d5a27; color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; }
+        /* Bottom UI Panel (Fixed Regressions) */
+        .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 20px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 90%; max-width: 400px; text-align: center; }
+        .btn-report { background: #2d5a27; color: white; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: bold; cursor: pointer; }
+        
+        .side-menu { position: fixed; top: 0; left: -310px; width: 280px; height: 100%; background: #f8f9fa; z-index: 10000; transition: transform 0.3s ease; box-shadow: 5px 0 25px rgba(0,0,0,0.4); padding: 25px; visibility: hidden; }
+        .side-menu.open { transform: translateX(310px); visibility: visible; }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; backdrop-filter: blur(2px); }
+        .menu-overlay.active { display: block; }
+
+        .step { display: none; }
+        .step.active { display: block; }
     </style>
 </head>
 <body>
 
+<div id="menu-overlay" class="menu-overlay" onclick="toggleMenu()"></div>
 <div class="hamburger" onclick="toggleMenu()"><div></div><div></div><div></div></div>
+
+<div id="side-menu" class="side-menu">
+    <h2 style="color:#2d5a27; margin-top:0;">Menu</h2>
+    <div style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="alert('Species Gallery Opening...')">🖼️ Species Gallery</div>
+    <div style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
+    <div style="margin-top:30px; color:#999; cursor:pointer;" onclick="toggleMenu()">✕ Close</div>
+</div>
 
 <div class="time-panel">
     <div class="time-controls">
-        <button id="play-btn" onclick="togglePlay()" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">⏸</button>
-        <div style="display: flex; flex-direction: column; flex-grow: 1;">
-            <span id="time-label" style="font-weight: 800; font-size: 0.9rem;">11:15</span>
-            <span id="window-label" style="font-size: 0.6rem; color: #666;">Rolling Window: 3h</span>
+        <button onclick="togglePlay()" id="play-btn" style="border:none; background:none; font-size:1.2rem;">⏸</button>
+        <div style="flex-grow:1; display:flex; flex-direction:column;">
+            <span id="time-label" style="font-weight:800; font-size:0.9rem;">--:--</span>
+            <span id="status-label" style="font-size:0.6rem; color:#d9480f;">REPLAYING LAST 3H</span>
         </div>
-        <input type="range" id="time-slider" min="0" max="1439" value="675" oninput="manualTimeChange()">
+        <input type="range" id="time-slider" min="0" max="180" value="180" oninput="manualScrub()">
     </div>
     <div class="duration-picker">
         <button class="dur-btn" onclick="setWindow(60)">1h</button>
-        <button class="dur-btn" onclick="setWindow(120)">2h</button>
         <button class="dur-btn active" onclick="setWindow(180)">3h</button>
         <button class="dur-btn" onclick="setWindow(360)">6h</button>
         <button class="dur-btn" onclick="setWindow(720)">12h</button>
@@ -68,14 +81,8 @@
 
 <div class="filter-widget">
     <div class="filter-options" id="filter-box">
-        <div class="filter-group-label">RED DEER</div>
-        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-red-m"> <span style="color:#e63946">●</span> Stags</label>
-        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-red-f"> <span style="color:#f4a261">●</span> Hinds</label>
-        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-red-y"> <span style="color:#ffd166">●</span> Calves</label>
-        <div class="filter-group-label">FALLOW DEER</div>
-        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-fal-m"> <span style="color:#0077b6">●</span> Bucks</label>
-        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-fal-f"> <span style="color:#00b4d8">●</span> Does</label>
-        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-fal-y"> <span style="color:#90e0ef">●</span> Fawns</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-red"> Red Deer</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-fal"> Fallow Deer</label>
     </div>
     <button class="filter-btn" onclick="document.getElementById('filter-box').classList.toggle('show')">🔍</button>
 </div>
@@ -83,10 +90,20 @@
 <div id="map"></div>
 
 <div class="ui-panel">
-    <div style="font-weight:800; color:#2d5a27; font-size:1.3rem;">Hello Deer Prototype</div>
-    <div style="display:flex; gap:8px; margin-top:10px;">
-        <button style="flex:1; padding:10px; border-radius:10px; border:1px solid #ddd; background:#f8f9fa;" onclick="map.flyTo([51.442, -0.285], 14)">📍 Richmond</button>
-        <button style="flex:1; padding:10px; border-radius:10px; border:1px solid #ddd; background:#f8f9fa;" onclick="map.flyTo([51.413, -0.339], 14)">📍 Bushy</button>
+    <div id="main-ui">
+        <div style="font-weight:800; color:#2d5a27; font-size:1.3rem;">Hello Deer</div>
+        <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px;">Richmond Park</div>
+        <button class="btn-report" onclick="startWizard()">+ Report Sighting</button>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.442, -0.285], 14)">📍 Richmond</button>
+            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.413, -0.339], 14)">📍 Bushy</button>
+        </div>
+    </div>
+
+    <div id="step-1" class="step">
+        <h3>Verify Sighting</h3>
+        <button class="btn-report" onclick="hideAll()">Confirm Current Position</button>
+        <p onclick="hideAll()" style="color:#999; margin-top:10px; cursor:pointer;">Cancel</p>
     </div>
 </div>
 
@@ -95,23 +112,22 @@
     L.control.zoom({ position: 'topright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    // AMPED UP HEATMAP SETTINGS
-    let redHeat = L.heatLayer([], {radius: 45, blur: 15, minOpacity: 0.6, gradient: {0.4: '#ffd166', 0.8: '#f4a261', 1.0: '#e63946'}}).addTo(map);
-    let fallowHeat = L.heatLayer([], {radius: 45, blur: 15, minOpacity: 0.6, gradient: {0.4: '#90e0ef', 0.8: '#00b4d8', 1.0: '#0077b6'}}).addTo(map);
+    let redHeat = L.heatLayer([], {radius: 40, blur: 15, minOpacity: 0.5, gradient: {0.4: '#ffd166', 0.8: '#f4a261', 1.0: '#e63946'}}).addTo(map);
+    let fallowHeat = L.heatLayer([], {radius: 40, blur: 15, minOpacity: 0.5, gradient: {0.4: '#90e0ef', 0.8: '#00b4d8', 1.0: '#0077b6'}}).addTo(map);
 
     let isPlaying = true;
-    let lookbackMinutes = 180;
+    let lookbackMins = 180;
+    let playbackOffset = 0; // Current playhead relative to Start
     const sightings = [];
 
-    // Seed 800 points for massive heatmap visibility
     function seed() {
-        const types = ['m', 'f', 'y'];
+        const now = new Date();
+        const nowMins = now.getHours() * 60 + now.getMinutes();
         for(let i=0; i<800; i++) {
             sightings.push({
                 lat: 51.40 + (Math.random() * 0.08),
                 lng: -0.36 + (Math.random() * 0.10),
                 species: Math.random() > 0.5 ? 'Red' : 'Fallow',
-                sex: types[Math.floor(Math.random() * 3)],
                 time: Math.floor(Math.random() * 1440) 
             });
         }
@@ -119,52 +135,67 @@
     seed();
 
     function updateMap() {
-        const currentT = parseInt(document.getElementById('time-slider').value);
-        const h = Math.floor(currentT/60).toString().padStart(2,'0');
-        const m = (currentT%60).toString().padStart(2,'0');
+        const now = new Date();
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+        const startMins = nowMins - lookbackMins;
+        
+        const slider = document.getElementById('time-slider');
+        const currentPlaybackTime = startMins + parseInt(slider.value);
+        
+        // Update Time Label
+        let displayMins = currentPlaybackTime;
+        if (displayMins < 0) displayMins += 1440;
+        const h = Math.floor(displayMins/60).toString().padStart(2,'0');
+        const m = (displayMins%60).toString().padStart(2,'0');
         document.getElementById('time-label').innerText = `${h}:${m}`;
 
-        // Get filter states
-        const f = {
-            rm: document.getElementById('f-red-m').checked, rf: document.getElementById('f-red-f').checked, ry: document.getElementById('f-red-y').checked,
-            fm: document.getElementById('f-fal-m').checked, ff: document.getElementById('f-fal-f').checked, fy: document.getElementById('f-fal-y').checked
-        };
+        const showRed = document.getElementById('f-red').checked;
+        const showFal = document.getElementById('f-fal').checked;
 
+        // "Trail" Logic: Sightings closer to playhead are brighter
         const filtered = sightings.filter(s => {
-            let start = currentT - lookbackMinutes;
-            let inTime = (start < 0) ? (s.time >= (1440 + start) || s.time <= currentT) : (s.time >= start && s.time <= currentT);
-            if (!inTime) return false;
-
-            if (s.species === 'Red') {
-                return (s.sex === 'm' && f.rm) || (s.sex === 'f' && f.rf) || (s.sex === 'y' && f.ry);
-            } else {
-                return (s.sex === 'm' && f.fm) || (s.sex === 'f' && f.ff) || (s.sex === 'y' && f.fy);
-            }
+            let sTime = s.time;
+            // Handle day wrap
+            let diff = currentPlaybackTime - sTime;
+            if (diff > 720) diff -= 1440;
+            if (diff < -720) diff += 1440;
+            
+            return diff >= 0 && diff <= lookbackMins;
+        }).map(s => {
+            let age = currentPlaybackTime - s.time;
+            let intensity = 1.0 - (age / lookbackMins); // Newer = brighter
+            return [s.lat, s.lng, Math.max(0.2, intensity)];
         });
-        
-        redHeat.setLatLngs(filtered.filter(s => s.species==='Red').map(s => [s.lat, s.lng, 1.0]));
-        fallowHeat.setLatLngs(filtered.filter(s => s.species==='Fallow').map(s => [s.lat, s.lng, 1.0]));
+
+        redHeat.setLatLngs(showRed ? filtered.filter((_,i) => sightings[i].species==='Red') : []);
+        fallowHeat.setLatLngs(showFal ? filtered.filter((_,i) => sightings[i].species==='Fallow') : []);
     }
 
-    function loopLogic() {
+    function playLoop() {
         if(!isPlaying) return;
-        let slider = document.getElementById('time-slider');
-        slider.value = (parseInt(slider.value) + 5) % 1440;
+        const slider = document.getElementById('time-slider');
+        let val = parseInt(slider.value) + 2;
+        if(val > lookbackMins) val = 0;
+        slider.value = val;
         updateMap();
     }
 
-    function setWindow(mins) {
-        lookbackMinutes = mins;
-        document.getElementById('window-label').innerText = `Rolling Window: ${mins >= 60 ? mins/60 + 'h' : mins + 'm'}`;
+    function setWindow(m) {
+        lookbackMins = m;
+        document.getElementById('time-slider').max = m;
+        document.getElementById('status-label').innerText = `REPLAYING LAST ${m >= 60 ? m/60+'H' : m+'M'}`;
         document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
         event.target.classList.add('active');
         updateMap();
     }
 
     function togglePlay() { isPlaying = !isPlaying; document.getElementById('play-btn').innerText = isPlaying ? "⏸" : "▶"; }
-    function manualTimeChange() { isPlaying = false; document.getElementById('play-btn').innerText = "▶"; updateMap(); }
-    
-    setInterval(loopLogic, 100); // Faster tick for smoother play
+    function manualScrub() { isPlaying = false; document.getElementById('play-btn').innerText = "▶"; updateMap(); }
+    function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
+    function startWizard() { document.getElementById('main-ui').style.display='none'; document.getElementById('step-1').classList.add('active'); }
+    function hideAll() { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('main-ui').style.display='block'; }
+
+    setInterval(playLoop, 100);
     window.onload = updateMap;
 </script>
 </body>
