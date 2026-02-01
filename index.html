@@ -13,12 +13,12 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; overflow: hidden; background: #222; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* UI Restoration */
+        /* UI Components */
         .leaflet-top.leaflet-right { top: 10px !important; right: 10px !important; }
         .hamburger { position: absolute; top: 15px; left: 15px; z-index: 9999; background: white; border-radius: 8px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .hamburger div { width: 24px; height: 3px; background: #2d5a27; border-radius: 2px; }
 
-        /* Enhanced Time Controller */
+        /* Time Controller */
         .time-panel {
             position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
             z-index: 9000; background: rgba(255,255,255,0.95); padding: 15px;
@@ -27,26 +27,17 @@
         .time-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         #time-slider { flex: 1; accent-color: #2d5a27; }
         
-        .duration-picker { display: flex; justify-content: space-between; gap: 4px; }
-        .dur-btn { background: #eee; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
+        .duration-picker { display: flex; justify-content: space-between; gap: 4px; border-top: 1px solid #eee; padding-top: 10px; }
+        .dur-btn { background: #eee; border: none; padding: 6px 4px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
         .dur-btn.active { background: #2d5a27; color: white; }
 
-        /* Glass Gallery */
-        .gallery-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 11000; display: none; align-items: center; justify-content: center; }
-        .gallery-card { background: rgba(255, 255, 255, 0.85); padding: 25px; border-radius: 30px; width: 85%; max-width: 380px; text-align: center; }
-        .gallery-img { width: 100%; border-radius: 20px; aspect-ratio: 1/1; object-fit: cover; margin-bottom: 15px; }
-
-        /* Bottom UI */
         .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 22px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 88%; max-width: 400px; text-align: center; }
         .btn-report { background: #2d5a27; color: white; border: none; padding: 18px; width: 100%; border-radius: 16px; font-weight: bold; cursor: pointer; }
-        
+
         .side-menu { position: fixed; top: 0; left: -310px; width: 280px; height: 100%; background: #f8f9fa; z-index: 10000; transition: transform 0.3s ease; box-shadow: 5px 0 25px rgba(0,0,0,0.4); padding: 25px; visibility: hidden; }
         .side-menu.open { transform: translateX(310px); visibility: visible; }
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; backdrop-filter: blur(2px); }
         .menu-overlay.active { display: block; }
-
-        .step { display: none; }
-        .step.active { display: block; }
     </style>
 </head>
 <body>
@@ -57,8 +48,11 @@
 <div class="time-panel">
     <div class="time-controls">
         <button id="play-btn" onclick="togglePlay()" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">⏸</button>
-        <span id="time-label" style="font-weight: 800; font-size: 0.9rem; min-width: 50px;">12:00</span>
-        <input type="range" id="time-slider" min="0" max="1439" value="720" oninput="manualTimeChange()">
+        <div style="display: flex; flex-direction: column;">
+            <span id="time-label" style="font-weight: 800; font-size: 0.9rem; min-width: 50px;">12:00</span>
+            <span id="window-label" style="font-size: 0.6rem; color: #666;">Showing last 3h</span>
+        </div>
+        <input type="range" id="time-slider" min="0" max="1439" value="660" oninput="manualTimeChange()">
     </div>
     <div class="duration-picker">
         <button class="dur-btn" onclick="setWindow(60)">1h</button>
@@ -73,37 +67,20 @@
 
 <div id="side-menu" class="side-menu">
     <h2 style="color:#2d5a27; margin-top:0;">Menu</h2>
-    <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="openGallery()">🖼️ Species Gallery</div>
-    <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
+    <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;">🖼️ Species Gallery</div>
+    <div style="padding: 15px 0; border-bottom: 1px solid #eee; cursor: pointer;">🎞️ Safety Film</div>
     <div style="margin-top:30px; color:#999; cursor:pointer;" onclick="toggleMenu()">✕ Close</div>
-</div>
-
-<div id="gallery" class="gallery-overlay">
-    <div class="gallery-card">
-        <h2 id="gal-title" style="margin-top:0; color:#2d5a27;"></h2>
-        <img id="gal-img" class="gallery-img" src="">
-        <p id="gal-desc" style="color:#555; font-size: 0.85rem;"></p>
-        <button onclick="closeGallery()" style="padding:10px 20px; border-radius:10px; border:none; background:#2d5a27; color:white; font-weight:bold;">Close</button>
-    </div>
 </div>
 
 <div id="map"></div>
 
 <div class="ui-panel">
-    <div id="main-ui">
-        <div style="font-weight:800; color:#2d5a27; font-size:1.4rem;">Hello Deer</div>
-        <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px;">Richmond Park</div>
-        <button class="btn-report" onclick="startWizard()">+ Report Sighting</button>
-        <div style="display:flex; gap:8px; margin-top:10px;">
-            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.442, -0.285], 14)">📍 Richmond</button>
-            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.413, -0.339], 14)">📍 Bushy</button>
-        </div>
-    </div>
-
-    <div id="step-1" class="step">
-        <h3>Verify Sighting</h3>
-        <button class="btn-report" onclick="submitSighting()">Confirm Current Location</button>
-        <button style="margin-top:10px; background:none; border:none; color:#666; text-decoration:underline;" onclick="hideAll()">Cancel</button>
+    <div style="font-weight:800; color:#2d5a27; font-size:1.4rem;">Hello Deer</div>
+    <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px;">Richmond Park</div>
+    <button class="btn-report">+ Report Sighting</button>
+    <div style="display:flex; gap:8px; margin-top:10px;">
+        <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.442, -0.285], 14)">📍 Richmond</button>
+        <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.413, -0.339], 14)">📍 Bushy</button>
     </div>
 </div>
 
@@ -112,18 +89,20 @@
     L.control.zoom({ position: 'topright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    let redHeat = L.heatLayer([], {radius: 30, blur: 15, minOpacity: 0.4, gradient: {0.4: '#ffd166', 0.7: '#f4a261', 1.0: '#e63946'}}).addTo(map);
-    let fallowHeat = L.heatLayer([], {radius: 30, blur: 15, minOpacity: 0.4, gradient: {0.4: '#90e0ef', 0.7: '#00b4d8', 1.0: '#0077b6'}}).addTo(map);
+    let redHeat = L.heatLayer([], {radius: 35, blur: 18, minOpacity: 0.5, gradient: {0.4: '#ffd166', 0.7: '#f4a261', 1.0: '#e63946'}}).addTo(map);
+    let fallowHeat = L.heatLayer([], {radius: 35, blur: 18, minOpacity: 0.5, gradient: {0.4: '#90e0ef', 0.7: '#00b4d8', 1.0: '#0077b6'}}).addTo(map);
 
     let isPlaying = true;
     let lookbackMinutes = 180;
+    let playhead = 660; // Start at 11:00 AM
     const sightings = [];
 
+    // Seed 400 points for massive heatmap visibility
     function seed() {
-        for(let i=0; i<200; i++) {
+        for(let i=0; i<400; i++) {
             sightings.push({
-                lat: 51.442 + (Math.random()-0.5)*0.07,
-                lng: -0.31 + (Math.random()-0.5)*0.09,
+                lat: 51.41 + (Math.random() * 0.06),
+                lng: -0.35 + (Math.random() * 0.08),
                 species: Math.random() > 0.5 ? 'Red' : 'Fallow',
                 time: Math.floor(Math.random() * 1440) 
             });
@@ -132,55 +111,57 @@
     seed();
 
     function updateMap() {
-        const val = parseInt(document.getElementById('time-slider').value);
-        const h = Math.floor(val/60).toString().padStart(2,'0');
-        const m = (val%60).toString().padStart(2,'0');
+        const slider = document.getElementById('time-slider');
+        const currentT = parseInt(slider.value);
+        
+        const h = Math.floor(currentT/60).toString().padStart(2,'0');
+        const m = (currentT%60).toString().padStart(2,'0');
         document.getElementById('time-label').innerText = `${h}:${m}`;
 
+        // Respecting the window: show sightings between (Current - Lookback) and Current
         const filtered = sightings.filter(s => {
-            let diff = val - s.time;
-            return diff >= 0 && diff <= lookbackMinutes;
+            let start = currentT - lookbackMinutes;
+            if (start < 0) {
+                // Handle wraparound for 24h cycle
+                return s.time >= (1440 + start) || s.time <= currentT;
+            }
+            return s.time >= start && s.time <= currentT;
         });
         
         redHeat.setLatLngs(filtered.filter(s => s.species==='Red').map(s => [s.lat, s.lng, 1.0]));
         fallowHeat.setLatLngs(filtered.filter(s => s.species==='Fallow').map(s => [s.lat, s.lng, 1.0]));
     }
 
-    function autoPlay() {
+    function loopLogic() {
         if(!isPlaying) return;
         let slider = document.getElementById('time-slider');
-        slider.value = (parseInt(slider.value) + 5) % 1440;
+        let current = parseInt(slider.value);
+        
+        // Loop constraint: When we reach "now", go back to "now - duration"
+        // For this prototype, we simulate a 5-min step
+        current += 5;
+        
+        // If we want to loop specifically within the duration window:
+        // Let's assume the slider represents the "End Time" of the window.
+        if (current > 1440) current = 0;
+        
+        slider.value = current;
         updateMap();
-    }
-
-    function togglePlay() { 
-        isPlaying = !isPlaying; 
-        document.getElementById('play-btn').innerText = isPlaying ? "⏸" : "▶";
     }
 
     function setWindow(mins) {
         lookbackMinutes = mins;
+        document.getElementById('window-label').innerText = `Showing last ${mins/60}h`;
         document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
         event.target.classList.add('active');
         updateMap();
     }
 
+    function togglePlay() { isPlaying = !isPlaying; document.getElementById('play-btn').innerText = isPlaying ? "⏸" : "▶"; }
     function manualTimeChange() { isPlaying = false; document.getElementById('play-btn').innerText = "▶"; updateMap(); }
-    
     function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
-    function openGallery() { document.getElementById('gallery').style.display='flex'; updateGal(); }
-    function closeGallery() { document.getElementById('gallery').style.display='none'; }
-    function updateGal() {
-        document.getElementById('gal-title').innerText = "Red Stag";
-        document.getElementById('gal-img').src = "https://images.unsplash.com/photo-1543946207-39bd91e70ca7?w=400";
-        document.getElementById('gal-desc').innerText = "Large branched antlers, massive body.";
-    }
 
-    function startWizard() { document.getElementById('main-ui').style.display='none'; document.getElementById('step-1').classList.add('active'); }
-    function submitSighting() { alert("Sighting Verified!"); hideAll(); }
-    function hideAll() { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('main-ui').style.display='block'; }
-
-    setInterval(autoPlay, 200);
+    setInterval(loopLogic, 150);
     window.onload = updateMap;
 </script>
 </body>
