@@ -1,90 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Deer by DAPP</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
-        #map { height: 100vh; width: 100vw; }
-        .ui-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 3000; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
-        
-        /* Species Toggle Buttons */
-        .species-toggle { display: flex; gap: 5px; margin-bottom: 15px; }
-        .spec-btn { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 10px; background: white; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
-        .spec-btn.active { border-color: #2d5a27; background: #e8f5e9; color: #2d5a27; }
+<button id="trend-btn" class="btn-trend" onclick="toggleTrends()">📈 View Feb Trends</button>
 
-        .id-card { background: #f9f9f9; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 0.8rem; border-left: 4px solid #2d5a27; }
-        .btn-report { background: #2d5a27; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        #report-form, #id-guide { display: none; }
-        .counter-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
-    </style>
-</head>
-<body>
-
-<div id="map"></div>
-
-<div class="ui-panel">
-    <div id="main-ui">
-        <button class="btn-report" onclick="showReporting()">+ Report Sighting</button>
-        <button onclick="showID()" style="width:100%; border:none; background:none; color:#2d5a27; font-weight:bold; margin-top:10px; cursor:pointer;">📖 Deer ID Guide</button>
-    </div>
-
-    <div id="id-guide">
-        <h4 style="margin:0 0 10px 0;">Richmond Park ID Guide</h4>
-        <div class="id-card">
-            <b>🔴 Red Deer:</b> Huge, branched antlers (stags), plain reddish/brown coat. No spots.
-        </div>
-        
-        <div class="id-card">
-            <b>⚪ Fallow Deer:</b> Hand-shaped antlers (bucks), white spots, black/white "target" rump.
-        </div>
-        
-        <button onclick="hideID()" class="btn-report" style="background:#666">Close Guide</button>
-    </div>
-
-    <div id="report-form">
-        <h4 style="margin:0 0 10px 0;">Select Species</h4>
-        <div class="species-toggle">
-            <button class="spec-btn active" id="btn-red" onclick="setSpecies('Red')">Red Deer</button>
-            <button class="spec-btn" id="btn-fallow" onclick="setSpecies('Fallow')">Fallow</button>
-            <button class="spec-btn" id="btn-unsure" onclick="setSpecies('Unsure')">Not Sure</button>
-        </div>
-
-        <div class="counter-row"><span>Males (Stags/Bucks)</span><button onclick="change('m', 1)">+ <span id="m-count">0</span></button></div>
-        <div class="counter-row"><span>Females (Hinds/Does)</span><button onclick="change('f', 1)">+ <span id="f-count">0</span></button></div>
-        
-        <button class="btn-report" onclick="submitSighting()" style="background: #e67e22; margin-top:10px;">Submit Species Report</button>
-        <button onclick="hideReporting()" style="width:100%; background:none; border:none; color:#666; margin-top:8px; cursor:pointer;">Cancel</button>
-    </div>
-</div>
+<style>
+    .btn-trend { background: #5d4037; color: white; border: none; padding: 10px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    .trend-active { background: #8d6e63 !important; border: 2px solid #fff; }
+</style>
 
 <script>
-    let selectedSpecies = 'Red';
-    let counts = { m: 0, f: 0 };
+    let trendsActive = false;
+    
+    // Historical February Data Points (Typical spots near Pen Ponds and Sidmouth Woods)
+    const febTrendData = [
+        [51.446, -0.288, 0.9], [51.441, -0.280, 0.7], [51.438, -0.285, 0.8],
+        [51.432, -0.290, 0.6], [51.448, -0.292, 0.5]
+    ];
 
-    function setSpecies(type) {
-        selectedSpecies = type;
-        document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-' + type.toLowerCase().replace(' ', '')).classList.add('active');
-    }
-
-    function showReporting() { document.getElementById('main-ui').style.display='none'; document.getElementById('report-form').style.display='block'; }
-    function hideReporting() { document.getElementById('main-ui').style.display='block'; document.getElementById('report-form').style.display='none'; }
-    function showID() { document.getElementById('main-ui').style.display='none'; document.getElementById('id-guide').style.display='block'; }
-    function hideID() { document.getElementById('main-ui').style.display='block'; document.getElementById('id-guide').style.display='none'; }
-
-    function change(type, delta) {
-        counts[type] += delta;
-        document.getElementById(type + '-count').innerText = counts[type];
-    }
-
-    function submitSighting() {
-        alert(`Success! Reported ${counts.m + counts.f} ${selectedSpecies} deer. Total count sent to Rangers.`);
-        hideReporting();
-        counts = { m: 0, f: 0 };
+    function toggleTrends() {
+        trendsActive = !trendsActive;
+        const btn = document.getElementById('trend-btn');
+        
+        if (trendsActive) {
+            btn.classList.add('trend-active');
+            btn.innerText = "Showing: Feb Trends (16:00)";
+            // Swap live heat for trend heat
+            heat.setOptions({ gradient: {0.4: 'blue', 0.6: 'cyan', 1: 'lime'} }); 
+            heat.setLatLngs(febTrendData);
+        } else {
+            btn.classList.remove('trend-active');
+            btn.innerText = "📈 View Feb Trends";
+            // Back to live "Red" heatmap
+            heat.setOptions({ gradient: {0.4: 'yellow', 0.6: 'orange', 1: 'red'} });
+            heat.setLatLngs(liveSightings); // This would be your live array
+        }
     }
 </script>
-</body>
-</html>
