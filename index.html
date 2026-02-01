@@ -13,43 +13,25 @@
         :root { --vh: 1vh; }
         body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; background: #222; height: 100vh; height: calc(var(--vh) * 100); }
         #map { height: 100%; width: 100vw; z-index: 1; }
-        
-        /* Layout Adjustments */
         .leaflet-top.leaflet-left { left: auto; right: 10px; top: 10px; }
 
-        /* Hamburger Menu Icon */
-        .hamburger {
-            position: absolute; top: 15px; left: 15px; z-index: 4000;
-            background: white; border-radius: 8px; padding: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer;
-            display: flex; flex-direction: column; gap: 4px;
-        }
+        .hamburger { position: absolute; top: 15px; left: 15px; z-index: 4000; background: white; border-radius: 8px; padding: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .hamburger div { width: 22px; height: 3px; background: #2d5a27; border-radius: 2px; }
 
-        /* Side Drawer Menu */
-        .side-menu {
-            position: fixed; top: 0; left: -280px; width: 250px; height: 100%;
-            background: #f8f9fa; z-index: 4001; transition: 0.3s ease;
-            box-shadow: 2px 0 15px rgba(0,0,0,0.3); padding: 20px;
-        }
+        .side-menu { position: fixed; top: 0; left: -280px; width: 250px; height: 100%; background: #f8f9fa; z-index: 4001; transition: 0.3s ease; box-shadow: 2px 0 15px rgba(0,0,0,0.3); padding: 20px; }
         .side-menu.open { left: 0; }
-        .menu-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 3999; display: none;
-        }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 3999; display: none; }
         .menu-overlay.active { display: block; }
-        .menu-item { padding: 15px; border-bottom: 1px solid #ddd; font-weight: bold; color: #333; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .menu-item:hover { background: #eee; }
+        .menu-item { padding: 15px; border-bottom: 1px solid #ddd; font-weight: bold; color: #333; cursor: pointer; }
 
-        /* Bottom UI Panel */
-        .ui-panel {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            z-index: 3000; background: white; padding: 20px; border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 380px;
-        }
-
+        .ui-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; background: white; padding: 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 85%; max-width: 380px; }
         .logo { font-weight: bold; color: #2d5a27; font-size: 1.2rem; text-align: center; }
-        .location-header { font-size: 0.85rem; color: #666; text-align: center; margin-bottom: 8px; font-weight: 500; }
+        .location-header { font-size: 0.85rem; color: #666; text-align: center; margin-bottom: 4px; font-weight: 500; }
+        
+        .activity-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+        .act-high { background: #fee2e2; color: #b91c1c; }
+        .act-low { background: #e8f5e9; color: #2d5a27; }
+
         .status-bar { color: #2d5a27; padding: 5px; text-align: center; margin-bottom: 15px; font-weight: bold; font-size: 0.85rem; line-height: 1.4; }
         .status-bar.danger { color: #b91c1c; }
 
@@ -73,18 +55,12 @@
 <body>
 
 <div id="menu-overlay" class="menu-overlay" onclick="toggleMenu()"></div>
-
-<div class="hamburger" onclick="toggleMenu()">
-    <div></div>
-    <div></div>
-    <div></div>
-</div>
+<div class="hamburger" onclick="toggleMenu()"><div></div><div></div><div></div></div>
 
 <div id="side-menu" class="side-menu">
     <h2 style="color:#2d5a27; margin-bottom:30px;">Menu</h2>
     <div class="menu-item" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
-    <div class="menu-item" onclick="alert('Richmond Park & Bushy Park support active.')">🌳 About the Parks</div>
-    <div class="menu-item" onclick="alert('Privacy: Your data is anonymized.')">🔒 Privacy Policy</div>
+    <div class="menu-item" onclick="alert('UK Timezone forced for all users.')">🌐 Global Time Sync: ON</div>
     <div class="menu-item" onclick="toggleMenu()" style="margin-top:20px; color:#666;">⬅️ Close</div>
 </div>
 
@@ -95,6 +71,7 @@
     <div id="main-ui">
         <div class="logo">🦌 Hello Deer <small style="font-weight: normal; color: #666;">DAPP</small></div>
         <div id="park-name" class="location-header">Detecting Park...</div>
+        <div style="text-align:center;"><span id="activity-label" class="activity-badge act-low">Activity: Low</span></div>
         <div id="timer-display" class="status-bar">Syncing Gates...</div>
         
         <button class="btn-report" onclick="startWizard()">+ Report a Sighting</button>
@@ -131,11 +108,25 @@
     const map = L.map('map').setView([51.442, -0.285], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     
+    // Heatmap Simulation
+    let heat = L.heatLayer([], {radius: 25, blur: 15}).addTo(map);
+    function updateHeatmap() {
+        let center = map.getCenter();
+        let points = [];
+        for(let i=0; i<15; i++) {
+            points.push([center.lat + (Math.random()-0.5)*0.01, center.lng + (Math.random()-0.5)*0.01, 0.5]);
+        }
+        heat.setLatLngs(points);
+        const badge = document.getElementById('activity-label');
+        if(Math.random() > 0.5) { badge.innerText = "Activity: High (1h)"; badge.className="activity-badge act-high"; }
+        else { badge.innerText = "Activity: Low"; badge.className="activity-badge act-low"; }
+    }
+
     let reportData = { species: '', m: 0, f: 0, b: 0 };
 
-    function toggleMenu() {
-        document.getElementById('side-menu').classList.toggle('open');
-        document.getElementById('menu-overlay').classList.toggle('active');
+    function getUKTime() {
+        let now = new Date();
+        return new Date(now.toLocaleString("en-US", {timeZone: "Europe/London"}));
     }
 
     function formatTime(ms) {
@@ -146,22 +137,22 @@
     }
 
     function updateGateStatus() {
-        const now = new Date();
-        const lockTime = new Date(); lockTime.setHours(20, 0, 0, 0);
-        const openTime = new Date(); openTime.setHours(7, 30, 0, 0);
+        const now = getUKTime();
+        const lockTime = new Date(now); lockTime.setHours(20, 0, 0, 0);
+        const openTime = new Date(now); openTime.setHours(7, 30, 0, 0);
         const el = document.getElementById('timer-display');
         let isClosed = (now >= lockTime || now < openTime);
         
         if (isClosed) {
             let nextOpen = new Date(openTime);
             if (now >= lockTime) nextOpen.setDate(now.getDate() + 1);
-            el.innerHTML = `GATES: <span style="color:#b91c1c">CLOSED</span><br>Opening in ${formatTime(nextOpen - now)}`;
+            el.innerHTML = `GATES: <span style="color:#b91c1c">CLOSED (UK Time)</span><br>Opening in ${formatTime(nextOpen - now)}`;
         } else {
-            el.innerHTML = `GATES: <span style="color:#2d5a27">OPEN</span><br>Closing in ${formatTime(lockTime - now)}`;
+            el.innerHTML = `GATES: <span style="color:#2d5a27">OPEN (UK Time)</span><br>Closing in ${formatTime(lockTime - now)}`;
         }
         el.className = isClosed ? "status-bar danger" : "status-bar";
     }
-    setInterval(updateGateStatus, 1000); updateGateStatus();
+    setInterval(updateGateStatus, 1000);
 
     function updateParkHeader() {
         const center = map.getCenter();
@@ -170,7 +161,7 @@
         else if (center.lat > 51.40 && center.lat < 51.42 && center.lng > -0.36 && center.lng < -0.31) header.innerHTML = "📍 Bushy Park";
         else header.innerHTML = "Outside Protected Parks";
     }
-    map.on('move', updateParkHeader);
+    map.on('moveend', () => { updateParkHeader(); updateHeatmap(); });
 
     function toggleSimulator(park) {
         document.querySelectorAll('.btn-sim').forEach(b => b.classList.remove('sim-active'));
@@ -183,6 +174,10 @@
         }
     }
 
+    // Initialize
+    window.onload = () => { updateParkHeader(); updateGateStatus(); updateHeatmap(); };
+
+    function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
     function startWizard() { hideAll(); document.getElementById('step-1').classList.add('active'); document.getElementById('main-ui').style.display = 'none'; document.getElementById('crosshair').style.display = 'block'; }
     function nextStep(step, speciesChoice) {
         if (speciesChoice) {
