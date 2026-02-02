@@ -10,40 +10,45 @@
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 
     <style>
+        :root { --primary: #2d5a27; --glass: rgba(255, 255, 255, 0.9); }
         body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; overflow: hidden; background: #222; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* Persistent UI Elements */
-        .leaflet-top.leaflet-right { top: 10px !important; right: 10px !important; }
-        .hamburger { position: absolute; top: 15px; left: 15px; z-index: 9999; background: white; border-radius: 8px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
-        .hamburger div { width: 24px; height: 3px; background: #2d5a27; border-radius: 2px; }
+        /* NAVIGATION & MENU */
+        .hamburger { position: absolute; top: 15px; left: 15px; z-index: 9999; background: white; border-radius: 8px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; }
+        .hamburger div { width: 24px; height: 3px; background: var(--primary); border-radius: 2px; margin: 4px 0; }
+        .side-menu { position: fixed; top: 0; left: -300px; width: 260px; height: 100%; background: #fff; z-index: 10000; transition: 0.3s; padding: 30px; box-shadow: 5px 0 20px rgba(0,0,0,0.2); }
+        .side-menu.open { left: 0; }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 9998; display: none; backdrop-filter: blur(2px); }
+        .menu-overlay.active { display: block; }
 
-        /* Time Control (Loops from Now-Duration to Now) */
+        /* TIME REPLAY PANEL */
         .time-panel {
             position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
-            z-index: 9000; background: rgba(255,255,255,0.95); padding: 12px;
+            z-index: 9000; background: var(--glass); padding: 12px;
             border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); width: 88%; max-width: 380px;
         }
         .time-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        #time-slider { flex: 1; accent-color: #2d5a27; }
-        .dur-btn { background: #eee; border: none; padding: 5px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; cursor: pointer; flex: 1; }
-        .dur-btn.active { background: #2d5a27; color: white; }
+        #time-slider { flex: 1; accent-color: var(--primary); }
+        .dur-btn { background: #eee; border: none; padding: 6px; border-radius: 6px; font-size: 0.6rem; font-weight: bold; cursor: pointer; flex: 1; }
+        .dur-btn.active { background: var(--primary); color: white; }
 
-        /* Species Filters */
-        .filter-widget { position: absolute; bottom: 150px; right: 15px; z-index: 9001; }
+        /* GLASS GALLERY */
+        .gallery-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 11000; display: none; align-items: center; justify-content: center; }
+        .gallery-card { background: rgba(255, 255, 255, 0.85); padding: 25px; border-radius: 30px; width: 85%; max-width: 350px; text-align: center; }
+        .gallery-img { width: 100%; border-radius: 20px; aspect-ratio: 1/1; object-fit: cover; margin-bottom: 10px; }
+
+        /* SPECIES FILTERS */
+        .filter-widget { position: absolute; bottom: 175px; right: 15px; z-index: 9001; }
         .filter-btn { background: white; width: 50px; height: 50px; border-radius: 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; border: none; font-size: 1.2rem; }
-        .filter-options { position: absolute; bottom: 60px; right: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: none; width: 180px; }
-        .filter-options.show { display: block; }
-        .filter-opt { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.8rem; font-weight: bold; }
+        .filter-box { position: absolute; bottom: 60px; right: 0; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: none; width: 190px; max-height: 50vh; overflow-y: auto; }
+        .filter-box.show { display: block; }
+        .filter-opt { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.8rem; font-weight: bold; }
 
-        /* Bottom UI Panel (Fixed Regressions) */
+        /* BOTTOM ACTION PANEL */
         .ui-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 9000; background: white; padding: 20px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); width: 90%; max-width: 400px; text-align: center; }
-        .btn-report { background: #2d5a27; color: white; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: bold; cursor: pointer; }
-        
-        .side-menu { position: fixed; top: 0; left: -310px; width: 280px; height: 100%; background: #f8f9fa; z-index: 10000; transition: transform 0.3s ease; box-shadow: 5px 0 25px rgba(0,0,0,0.4); padding: 25px; visibility: hidden; }
-        .side-menu.open { transform: translateX(310px); visibility: visible; }
-        .menu-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9998; display: none; backdrop-filter: blur(2px); }
-        .menu-overlay.active { display: block; }
+        .btn-report { background: var(--primary); color: white; border: none; padding: 16px; width: 100%; border-radius: 14px; font-weight: bold; cursor: pointer; }
+        .park-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #ddd; background: #f9f9f9; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
 
         .step { display: none; }
         .step.active { display: block; }
@@ -55,18 +60,18 @@
 <div class="hamburger" onclick="toggleMenu()"><div></div><div></div><div></div></div>
 
 <div id="side-menu" class="side-menu">
-    <h2 style="color:#2d5a27; margin-top:0;">Menu</h2>
-    <div style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="alert('Species Gallery Opening...')">🖼️ Species Gallery</div>
+    <h2 style="color:var(--primary); margin-top:0;">Hello Deer</h2>
+    <div style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="openGallery()">🖼️ Species Gallery</div>
     <div style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="window.open('https://www.youtube.com/watch?v=acwRCNxqWbA')">🎞️ Safety Film</div>
-    <div style="margin-top:30px; color:#999; cursor:pointer;" onclick="toggleMenu()">✕ Close</div>
+    <div style="margin-top:40px; color:#999; cursor:pointer;" onclick="toggleMenu()">✕ Close</div>
 </div>
 
 <div class="time-panel">
     <div class="time-controls">
-        <button onclick="togglePlay()" id="play-btn" style="border:none; background:none; font-size:1.2rem;">⏸</button>
+        <button onclick="togglePlay()" id="play-btn" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">⏸</button>
         <div style="flex-grow:1; display:flex; flex-direction:column;">
-            <span id="time-label" style="font-weight:800; font-size:0.9rem;">--:--</span>
-            <span id="status-label" style="font-size:0.6rem; color:#d9480f;">REPLAYING LAST 3H</span>
+            <span id="time-label" style="font-weight:800; font-size:1rem;">--:--</span>
+            <span id="status-label" style="font-size:0.6rem; color:#d9480f; font-weight:bold;">REPLAYING LAST 3H</span>
         </div>
         <input type="range" id="time-slider" min="0" max="180" value="180" oninput="manualScrub()">
     </div>
@@ -79,10 +84,31 @@
     </div>
 </div>
 
+<div id="gallery" class="gallery-overlay">
+    <div class="gallery-card">
+        <h2 id="gal-title" style="margin-top:0; color:var(--primary);"></h2>
+        <img id="gal-img" class="gallery-img" src="">
+        <p id="gal-desc" style="color:#555; font-size:0.85rem; min-height:3em;"></p>
+        <div style="display:flex; justify-content:space-between; margin-top:15px;">
+            <button class="dur-btn" style="background:#444; color:white;" onclick="prevGal()">Prev</button>
+            <button class="dur-btn" style="background:var(--primary); color:white;" onclick="closeGallery()">Close</button>
+            <button class="dur-btn" style="background:#444; color:white;" onclick="nextGal()">Next</button>
+        </div>
+    </div>
+</div>
+
 <div class="filter-widget">
-    <div class="filter-options" id="filter-box">
-        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-red"> Red Deer</label>
-        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-fal"> Fallow Deer</label>
+    <div class="filter-box" id="filter-box">
+        <div style="font-size:0.6rem; color:#999; margin-bottom:5px;">RED DEER</div>
+        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-rm"> Stags</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-rf"> Hinds</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-ry"> Calves</label>
+        <hr style="border:0; border-top:1px solid #eee;">
+        <div style="font-size:0.6rem; color:#999; margin-bottom:5px;">FALLOW DEER</div>
+        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-fm"> Bucks</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-ff"> Does</label>
+        <label class="filter-opt"><input type="checkbox" checked onchange="updateMap()" id="f-fy"> Fawns</label>
+        <div style="color:var(--primary); font-size:0.75rem; text-decoration:underline; text-align:center; margin-top:10px; cursor:pointer;" onclick="openGallery()">View ID Guide</div>
     </div>
     <button class="filter-btn" onclick="document.getElementById('filter-box').classList.toggle('show')">🔍</button>
 </div>
@@ -91,19 +117,19 @@
 
 <div class="ui-panel">
     <div id="main-ui">
-        <div style="font-weight:800; color:#2d5a27; font-size:1.3rem;">Hello Deer</div>
-        <div id="park-name" style="font-size:0.8rem; color:#666; margin-bottom:12px;">Richmond Park</div>
+        <div id="park-display" style="font-weight:800; color:var(--primary); font-size:1.1rem; margin-bottom:10px;">Richmond Park</div>
         <button class="btn-report" onclick="startWizard()">+ Report Sighting</button>
-        <div style="display:flex; gap:8px; margin-top:10px;">
-            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.442, -0.285], 14)">📍 Richmond</button>
-            <button style="flex:1; padding:8px; border-radius:8px; border:1px solid #ddd;" onclick="map.flyTo([51.413, -0.339], 14)">📍 Bushy</button>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+            <button class="park-btn" onclick="gotoPark('Richmond')">📍 Richmond</button>
+            <button class="park-btn" onclick="gotoPark('Bushy')">📍 Bushy</button>
         </div>
     </div>
 
-    <div id="step-1" class="step">
-        <h3>Verify Sighting</h3>
-        <button class="btn-report" onclick="hideAll()">Confirm Current Position</button>
-        <p onclick="hideAll()" style="color:#999; margin-top:10px; cursor:pointer;">Cancel</p>
+    <div id="report-step" class="step">
+        <h3 style="margin:0 0 10px 0;">Verify Now?</h3>
+        <button class="btn-report" onclick="submitSighting(true)">Yes, I am looking at them</button>
+        <button class="btn-report" style="background:#999; margin-top:10px;" onclick="submitSighting(false)">I saw them earlier</button>
+        <p onclick="hideAll()" style="color:#999; margin-top:10px; cursor:pointer; font-size:0.8rem;">Cancel</p>
     </div>
 </div>
 
@@ -112,22 +138,34 @@
     L.control.zoom({ position: 'topright' }).addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    let redHeat = L.heatLayer([], {radius: 40, blur: 15, minOpacity: 0.5, gradient: {0.4: '#ffd166', 0.8: '#f4a261', 1.0: '#e63946'}}).addTo(map);
-    let fallowHeat = L.heatLayer([], {radius: 40, blur: 15, minOpacity: 0.5, gradient: {0.4: '#90e0ef', 0.8: '#00b4d8', 1.0: '#0077b6'}}).addTo(map);
+    let redHeat = L.heatLayer([], {radius: 40, blur: 18, minOpacity: 0.55, gradient: {0.4: '#ffd166', 0.8: '#f4a261', 1.0: '#e63946'}}).addTo(map);
+    let fallowHeat = L.heatLayer([], {radius: 40, blur: 18, minOpacity: 0.55, gradient: {0.4: '#90e0ef', 0.8: '#00b4d8', 1.0: '#0077b6'}}).addTo(map);
 
     let isPlaying = true;
     let lookbackMins = 180;
-    let playbackOffset = 0; // Current playhead relative to Start
     const sightings = [];
 
+    const galData = [
+        { t: "Red Stag", d: "Large branched antlers.", img: "https://images.unsplash.com/photo-1543946207-39bd91e70ca7?w=400" },
+        { t: "Red Hind", d: "Female Red deer. No antlers.", img: "https://images.unsplash.com/photo-1608613437502-39bd37536f9a?w=400" },
+        { t: "Fallow Buck", d: "Spotted coat, palm antlers.", img: "https://images.unsplash.com/photo-1484406566174-9da000fda645?w=400" }
+    ];
+    let galIdx = 0;
+
+    // BOUNDS ENFORCEMENT
     function seed() {
-        const now = new Date();
-        const nowMins = now.getHours() * 60 + now.getMinutes();
+        const parks = [
+            { name: 'Richmond', lat: [51.43, 51.46], lng: [-0.31, -0.27] },
+            { name: 'Bushy', lat: [51.40, 51.42], lng: [-0.35, -0.32] }
+        ];
+        const types = ['m', 'f', 'y'];
         for(let i=0; i<800; i++) {
+            let p = parks[Math.random() > 0.6 ? 0 : 1];
             sightings.push({
-                lat: 51.40 + (Math.random() * 0.08),
-                lng: -0.36 + (Math.random() * 0.10),
+                lat: p.lat[0] + (Math.random() * (p.lat[1]-p.lat[0])),
+                lng: p.lng[0] + (Math.random() * (p.lng[1]-p.lng[0])),
                 species: Math.random() > 0.5 ? 'Red' : 'Fallow',
+                sex: types[Math.floor(Math.random()*3)],
                 time: Math.floor(Math.random() * 1440) 
             });
         }
@@ -138,64 +176,50 @@
         const now = new Date();
         const nowMins = now.getHours() * 60 + now.getMinutes();
         const startMins = nowMins - lookbackMins;
-        
         const slider = document.getElementById('time-slider');
-        const currentPlaybackTime = startMins + parseInt(slider.value);
+        const currentPlaybackTime = (startMins + parseInt(slider.value) + 1440) % 1440;
         
-        // Update Time Label
-        let displayMins = currentPlaybackTime;
-        if (displayMins < 0) displayMins += 1440;
-        const h = Math.floor(displayMins/60).toString().padStart(2,'0');
-        const m = (displayMins%60).toString().padStart(2,'0');
+        const h = Math.floor(currentPlaybackTime/60).toString().padStart(2,'0');
+        const m = (currentPlaybackTime%60).toString().padStart(2,'0');
         document.getElementById('time-label').innerText = `${h}:${m}`;
 
-        const showRed = document.getElementById('f-red').checked;
-        const showFal = document.getElementById('f-fal').checked;
+        const f = {
+            rm: document.getElementById('f-rm').checked, rf: document.getElementById('f-rf').checked, ry: document.getElementById('f-ry').checked,
+            fm: document.getElementById('f-fm').checked, ff: document.getElementById('f-ff').checked, fy: document.getElementById('f-fy').checked
+        };
 
-        // "Trail" Logic: Sightings closer to playhead are brighter
         const filtered = sightings.filter(s => {
-            let sTime = s.time;
-            // Handle day wrap
-            let diff = currentPlaybackTime - sTime;
-            if (diff > 720) diff -= 1440;
-            if (diff < -720) diff += 1440;
-            
-            return diff >= 0 && diff <= lookbackMins;
+            let diff = (currentPlaybackTime - s.time + 1440) % 1440;
+            if (diff > lookbackMins) return false;
+            if (s.species === 'Red') return (s.sex === 'm' && f.rm) || (s.sex === 'f' && f.rf) || (s.sex === 'y' && f.ry);
+            return (s.sex === 'm' && f.fm) || (s.sex === 'f' && f.ff) || (s.sex === 'y' && f.fy);
         }).map(s => {
-            let age = currentPlaybackTime - s.time;
-            let intensity = 1.0 - (age / lookbackMins); // Newer = brighter
-            return [s.lat, s.lng, Math.max(0.2, intensity)];
+            let age = (currentPlaybackTime - s.time + 1440) % 1440;
+            return [s.lat, s.lng, Math.max(0.1, 1.0 - (age / lookbackMins))];
         });
 
-        redHeat.setLatLngs(showRed ? filtered.filter((_,i) => sightings[i].species==='Red') : []);
-        fallowHeat.setLatLngs(showFal ? filtered.filter((_,i) => sightings[i].species==='Fallow') : []);
+        redHeat.setLatLngs(filtered.filter((_,i) => sightings[i].species==='Red'));
+        fallowHeat.setLatLngs(filtered.filter((_,i) => sightings[i].species==='Fallow'));
     }
 
-    function playLoop() {
-        if(!isPlaying) return;
-        const slider = document.getElementById('time-slider');
-        let val = parseInt(slider.value) + 2;
-        if(val > lookbackMins) val = 0;
-        slider.value = val;
-        updateMap();
-    }
-
-    function setWindow(m) {
-        lookbackMins = m;
-        document.getElementById('time-slider').max = m;
-        document.getElementById('status-label').innerText = `REPLAYING LAST ${m >= 60 ? m/60+'H' : m+'M'}`;
-        document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        updateMap();
-    }
-
+    // CORE UI ACTIONS
     function togglePlay() { isPlaying = !isPlaying; document.getElementById('play-btn').innerText = isPlaying ? "⏸" : "▶"; }
     function manualScrub() { isPlaying = false; document.getElementById('play-btn').innerText = "▶"; updateMap(); }
+    function setWindow(m) { lookbackMins = m; document.getElementById('time-slider').max = m; document.getElementById('time-slider').value = m; document.getElementById('status-label').innerText = `REPLAYING LAST ${m>=60?m/60+'H':m+'M'}`; updateMap(); }
+    function gotoPark(n) { map.flyTo(n==='Richmond'?[51.442,-0.285]:[51.413,-0.339], 14); document.getElementById('park-display').innerText=n+" Park"; }
     function toggleMenu() { document.getElementById('side-menu').classList.toggle('open'); document.getElementById('menu-overlay').classList.toggle('active'); }
-    function startWizard() { document.getElementById('main-ui').style.display='none'; document.getElementById('step-1').classList.add('active'); }
+    function startWizard() { document.getElementById('main-ui').style.display='none'; document.getElementById('report-step').classList.add('active'); }
+    function submitSighting(v) { alert(v ? "Verified!" : "Logged."); hideAll(); }
     function hideAll() { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('main-ui').style.display='block'; }
+    
+    // GALLERY ACTIONS
+    function openGallery() { document.getElementById('gallery').style.display='flex'; updateGal(); }
+    function closeGallery() { document.getElementById('gallery').style.display='none'; }
+    function nextGal() { galIdx = (galIdx + 1) % galData.length; updateGal(); }
+    function prevGal() { galIdx = (galIdx - 1 + galData.length) % galData.length; updateGal(); }
+    function updateGal() { document.getElementById('gal-title').innerText = galData[galIdx].t; document.getElementById('gal-img').src = galData[galIdx].img; document.getElementById('gal-desc').innerText = galData[galIdx].d; }
 
-    setInterval(playLoop, 100);
+    setInterval(() => { if(isPlaying) { let s = document.getElementById('time-slider'); s.value = (parseInt(s.value)+2) % lookbackMins; updateMap(); } }, 100);
     window.onload = updateMap;
 </script>
 </body>
